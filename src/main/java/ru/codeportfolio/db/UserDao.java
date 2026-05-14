@@ -5,7 +5,7 @@ import ru.codeportfolio.mad.User;
 
 import java.util.ArrayList;
 import java.util.List;
-
+//ор
 public class UserDao {
     // Имитация базы данных
     private static List<User> users = new ArrayList<>();
