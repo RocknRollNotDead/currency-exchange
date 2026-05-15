@@ -1,5 +1,7 @@
 package ru.codeportfolio;
 
+import ru.codeportfolio.db.InitializatorDB;
+
 public class Main {
     public static void main(String[] args){
         // принять запрос
@@ -8,6 +10,8 @@ public class Main {
         // получить ответ из бд
         // направить ответ в сервис отправки ответов на веб
         // отправить на сервлет
+
+        InitializatorDB.execute();
 
 
     }

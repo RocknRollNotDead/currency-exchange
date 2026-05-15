@@ -7,13 +7,30 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import ru.codeportfolio.db.UserDao;
 
+import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 @WebServlet("/users")
 public class UserServlet extends HttpServlet {
 
-    private UserDao userDao = new UserDao();
+    private UserDao userDao;
 
+    public void init(){
+        String path = getServletContext().getRealPath("/WEB-INF/database.db");
+        Connection conn;
+
+        try {
+            Class.forName("org.sqlite.JDBC");
+            conn = DriverManager.getConnection("jdbc:sqlite:" + path);
+        } catch (SQLException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        userDao = new UserDao(conn);
+    }
     // GET — показать список пользователей
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)

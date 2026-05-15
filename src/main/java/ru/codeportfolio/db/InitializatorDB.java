@@ -4,21 +4,21 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
 
-public class FirstDbApplication {
-    public static void main(String[] args) {
-        String url = "jdbc:sqlite:database.db";
-
+public class InitializatorDB {
+    public static void execute(){
+        String url = "jdbc:sqlite:C:/Users/artemka/Documents/pet-projects/currency-exchange/database.db";
         try (Connection conn = DriverManager.getConnection(url);
              Statement stmt = conn.createStatement()) {
             stmt.execute("PRAGMA foreign_keys = ON;");
+
             stmt.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT, email TEXT);");
-            stmt.execute("INSERT INTO users(name) VALUES ('Alice');");
+            stmt.execute("INSERT INTO users(name, email) VALUES ('Alice', 'mail example');");
 
 
             stmt.execute("""
                     CREATE TABLE IF NOT EXISTS currencies (
                         id INTEGER PRIMARY KEY,
-                        code VARCHAR(3) NOT NULL,
+                        code VARCHAR(4) NOT NULL,
                         full_name VARCHAR(45) NOT NULL,
                         sign VARCHAR(1) UNIQUE
                     );
@@ -29,9 +29,9 @@ public class FirstDbApplication {
                         id INTEGER PRIMARY KEY,
                         base_currency_id INTEGER NOT NULL,
                         target_currency_id INTEGER NOT NULL,
+                        rate DECIMAL(10, 6) NOT NULL,
                         FOREIGN KEY (base_currency_id) REFERENCES currencies(id),
                         FOREIGN KEY (target_currency_id) REFERENCES currencies(id),
-                        rate DECIMAL(10, 6) NOT NULL,
                         UNIQUE(base_currency_id, target_currency_id)
                     );
                     """);
@@ -40,6 +40,7 @@ public class FirstDbApplication {
             System.out.println("База работает");
 
         } catch (Exception e) {
+            //todo обработать все ошибки создания
             e.printStackTrace();
         }
     }
