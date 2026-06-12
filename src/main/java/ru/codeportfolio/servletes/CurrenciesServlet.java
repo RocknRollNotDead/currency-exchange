@@ -5,18 +5,21 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import ru.codeportfolio.db.CurrenciesDao;
+import ru.codeportfolio.db.ExchangeRatesDao;
 import ru.codeportfolio.db.UserDao;
+import ru.codeportfolio.services.CurrencyService;
 
-import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-@WebServlet("/users")
-public class UserServlet extends HttpServlet {
+@WebServlet("/currencies")
+public class CurrenciesServlet extends HttpServlet {
 
-    private UserDao userDao;
+    private CurrenciesDao currenciesDao;
+    private CurrencyService currencyService;
 
     public void init(){
         String path = "C:/Users/artemka/Documents/pet-projects/currency-exchange/database.db";
@@ -29,28 +32,33 @@ public class UserServlet extends HttpServlet {
             throw new RuntimeException(e);
         }
 
-        userDao = new UserDao(conn);
+        currenciesDao = new CurrenciesDao(conn);
+        currencyService = new CurrencyService(conn);
     }
-    // GET — показать список пользователей
+    // GET — показать список валют
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        req.setAttribute("users", userDao.getAllUsers());
-        req.getRequestDispatcher("users.jsp").forward(req, resp);
+//        req.setAttribute("currencies", currenciesDao.getAllCurrencies());
+        req.setAttribute("currencies", currencyService.getAllCurrencies());
+        req.getRequestDispatcher("currencies.jsp").forward(req, resp);
     }
 
-    // POST — добавить нового пользователя
+    // POST — добавить новую валюту
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        String name  = req.getParameter("name");
-        String email = req.getParameter("email");
+        String code = req.getParameter("code");
+        String fullName  = req.getParameter("fullName");
+        String sign = req.getParameter("sign");
 
-        userDao.addUser(name, email);
+        currenciesDao.addCurrency(code, fullName, sign);
+//        currencyService.addCurrency(code, fullName, sign);
 
         // Redirect после POST — паттерн PRG (Post/Redirect/Get)
-        resp.sendRedirect(req.getContextPath() + "/users");
+        resp.sendRedirect(req.getContextPath() + "/rates");
     }
 }
+

@@ -6,6 +6,7 @@ import java.sql.Statement;
 
 public class InitializatorDB {
     public static void execute(){
+
         String url = "jdbc:sqlite:C:/Users/artemka/Documents/pet-projects/currency-exchange/database.db";
         try (Connection conn = DriverManager.getConnection(url);
              Statement stmt = conn.createStatement()) {
