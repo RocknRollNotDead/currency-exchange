@@ -29,7 +29,7 @@ public class RateService {
         int baseCurrencyId = currencyService.getIdFromCode(baseCurrencyCode);
         int targetCurrencyId = currencyService.getIdFromCode(targetCurrencyCode);
 
-        exchangeRatesDao.deleteRate2(baseCurrencyId, targetCurrencyId);
+        exchangeRatesDao.deleteRate(baseCurrencyId, targetCurrencyId);
     }
 
     public double getRate (String baseCurrencyCode, String targetCurrencyCode){

@@ -18,7 +18,7 @@ import java.sql.SQLException;
 @WebServlet("/currencies")
 public class CurrenciesServlet extends HttpServlet {
 
-    private CurrenciesDao currenciesDao;
+//    private CurrenciesDao currenciesDao;
     private CurrencyService currencyService;
 
     public void init(){
@@ -32,7 +32,7 @@ public class CurrenciesServlet extends HttpServlet {
             throw new RuntimeException(e);
         }
 
-        currenciesDao = new CurrenciesDao(conn);
+//        currenciesDao = new CurrenciesDao(conn);
         currencyService = new CurrencyService(conn);
     }
     // GET — показать список валют
@@ -54,8 +54,8 @@ public class CurrenciesServlet extends HttpServlet {
         String fullName  = req.getParameter("fullName");
         String sign = req.getParameter("sign");
 
-        currenciesDao.addCurrency(code, fullName, sign);
-//        currencyService.addCurrency(code, fullName, sign);
+//        currenciesDao.addCurrency(code, fullName, sign);
+        currencyService.addCurrency(code, fullName, sign);
 
         // Redirect после POST — паттерн PRG (Post/Redirect/Get)
         resp.sendRedirect(req.getContextPath() + "/rates");

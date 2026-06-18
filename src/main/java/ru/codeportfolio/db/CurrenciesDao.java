@@ -1,6 +1,7 @@
 package ru.codeportfolio.db;
 
 
+import ru.codeportfolio.exceptions.DataAccessException;
 import ru.codeportfolio.mad.Currency;
 
 import java.sql.*;
@@ -34,11 +35,11 @@ public class CurrenciesDao {
             }
             return currencies;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to fetch currencies", e);
         }
     }
 
-    public void addCurrency(String code, String fullName, String sign) {
+    public int addCurrency(String code, String fullName, String sign) {
         try (PreparedStatement stmt = conn.prepareStatement(
                 "INSERT INTO currencies(code, full_name, sign) VALUES (?, ?, ?);"
         )){
@@ -46,10 +47,9 @@ public class CurrenciesDao {
             stmt.setString(1, code);
             stmt.setString(2, fullName);
             stmt.setString(3, sign);
-            stmt.executeUpdate();
-            System.out.println("создалася валюта " + code + " " + fullName + " " + sign);
+            return stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to add currency", e);
         }
     }
 
@@ -71,11 +71,11 @@ public class CurrenciesDao {
             }
             return null;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to get currency", e);
         }
     }
 
-    /*public Currencies findBySign(String sign){
+    public Currency findBySign(String sign){
 
         try {
             PreparedStatement stmt = conn.prepareStatement(
@@ -84,7 +84,7 @@ public class CurrenciesDao {
             stmt.setString(1, sign);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                return new Currencies(rs.getInt("id"),
+                return new Currency(rs.getInt("id"),
                         rs.getString("code"),
                         rs.getString("full_name"),
                         rs.getString("sign")
@@ -93,35 +93,34 @@ public class CurrenciesDao {
             }
             return null;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }*/
-
-
-
-    public void updateCurrency(String code, String fullName, String sign) {
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "UPDATE INTO currencies(code, full_name, sign) VALUES (?, ?, ?);"
-        )){
-
-            stmt.setString(1, code);
-            stmt.setString(2, fullName);
-            stmt.setString(3, sign);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to get currency", e);
         }
     }
 
-    public void deleteCurrency(String code) {
+
+    public int updateCurrency(String code, String fullName, String sign) {
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "UPDATE currencies SET full_name = ?, sign = ? WHERE code = ?;"
+        )){
+
+            stmt.setString(1, fullName);
+            stmt.setString(2, sign);
+            stmt.setString(3, code);
+            return stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to update currency", e);
+        }
+    }
+
+    public int deleteCurrency(String code) {
         try (PreparedStatement stmt = conn.prepareStatement(
                 "DELETE FROM currencies WHERE code = ?"
         )){
 
             stmt.setString(1, code);
-            stmt.executeUpdate();
+            return stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to delete currency", e);
         }
     }
 

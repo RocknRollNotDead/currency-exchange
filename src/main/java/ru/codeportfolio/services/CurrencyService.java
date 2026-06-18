@@ -1,6 +1,10 @@
 package ru.codeportfolio.services;
 
 import ru.codeportfolio.db.CurrenciesDao;
+import ru.codeportfolio.exceptions.AlreadyExistException;
+import ru.codeportfolio.exceptions.DataAccessException;
+import ru.codeportfolio.exceptions.NotFoundException;
+import ru.codeportfolio.exceptions.ValidationException;
 import ru.codeportfolio.mad.Currency;
 
 import java.sql.Connection;
@@ -16,20 +20,31 @@ public class CurrencyService {
 
     private final CurrenciesDao currenciesDao;
 
-
     public CurrencyService(Connection conn) {
         currenciesDao = new CurrenciesDao(conn);
     }
 
     public List<Currency> getAllCurrencies() {
-        // попробовать получить результат
-        // в случае ошибки кинуть throw
         return currenciesDao.getAllCurrencies();
     }
 
     public Currency getCurrency(String code){
 
-        return currenciesDao.findByCode(code);
+        if (code == null || code.isBlank()){
+            throw new ValidationException("code is null or empty");
+        }
+        if (!isCurrencyExist(code)){
+            throw new NotFoundException("Not found");
+        }
+
+        Currency result = currenciesDao.findByCode(code);
+
+        if (result == null) {
+            throw new NotFoundException("currency is null");
+        }
+
+        return result;
+
     }
 
     public void checkValues(String code, String fullName, String sign){
@@ -40,20 +55,77 @@ public class CurrencyService {
     }
 
     public void addCurrency(String code, String fullName, String sign) {
-        currenciesDao.addCurrency(code, fullName, sign);
+        if (code == null || code.isBlank()){
+            throw new ValidationException("code is null or empty");
+        }
+        if (isCurrencyExist(code)){
+            throw new AlreadyExistException("Failed to add");
+        }
+        if (isSignExist(sign)){
+            throw new AlreadyExistException("Failed to add. Sign is exist");
+        }
+
+        int result = currenciesDao.addCurrency(code, fullName, sign);
+
+        if (result == 0){
+            throw new DataAccessException("failed add");
+        }
+
+        // что то не удалось найти нужную валюту, операция сорвалась
+
     }
 
     public void updateCurrency(String code, String fullName, String sign) {
-        currenciesDao.updateCurrency(code, fullName, sign);
+
+
+        if (!isCurrencyExist(code)){
+            throw new NotFoundException("Not found");
+        }
+
+        if (isSignExist(sign)){
+            throw new AlreadyExistException("Failed to update. Sign is exist");
+        }
+
+        int result = currenciesDao.updateCurrency(code, fullName, sign);
+        if (result == 0){
+            throw new NotFoundException("currency not found");
+        }
     }
 
     public void deleteCurrency(String code) {
-        currenciesDao.deleteCurrency(code);
+        if (code == null || code.isBlank()){
+            throw new ValidationException("code is null or empty");
+        }
+        if (!isCurrencyExist(code)){
+            throw new NotFoundException("Not found");
+        }
+
+        int result = currenciesDao.deleteCurrency(code);
+
+        if (result == 0){
+            throw new DataAccessException("Fail to delete");
+        }
+
     }
 
-    public int getIdFromCode(String code){
-        Currency currency = currenciesDao.findByCode(code);
-        return currency.getId();
+     protected int getIdFromCode(String code){
+         if (code == null || code.isBlank()){
+             throw new ValidationException("code is null or empty!");
+         }
+         Currency currency = currenciesDao.findByCode(code);
+         if (currency == null){
+             throw new NotFoundException("currency not found");
+         }
+         return currency.getId();
+    }
+
+    private boolean isCurrencyExist(String code){
+        return currenciesDao.findByCode(code) != null;
+//        return getCurrency(code) != null;
+    }
+
+    private boolean isSignExist(String sign){
+        return currenciesDao.findBySign(sign) != null;
     }
 
 

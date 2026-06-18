@@ -19,8 +19,8 @@ import java.sql.SQLException;
 @WebServlet("/rates")
 public class RateServlet extends HttpServlet {
 
-    private ExchangeRatesDao exchangeRatesDao;
-    private CurrenciesDao currenciesDao;
+//    private ExchangeRatesDao exchangeRatesDao;
+//    private CurrenciesDao currenciesDao;
 
     private RateService rateService;
     private CurrencyService currencyService;
@@ -37,8 +37,8 @@ public class RateServlet extends HttpServlet {
             throw new RuntimeException(e);
         }
 
-        exchangeRatesDao = new ExchangeRatesDao(conn);
-        currenciesDao = new CurrenciesDao(conn);
+//        exchangeRatesDao = new ExchangeRatesDao(conn);
+//        currenciesDao = new CurrenciesDao(conn);
 
         rateService = new RateService(conn);
         currencyService = new CurrencyService(conn);
@@ -49,8 +49,12 @@ public class RateServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        req.setAttribute("rates", exchangeRatesDao.getAllExchangeRates());
-        req.setAttribute("currencies", currenciesDao.getAllCurrencies());
+//        req.setAttribute("rates", exchangeRatesDao.getAllExchangeRates());
+//        req.setAttribute("currencies", currenciesDao.getAllCurrencies());
+//
+        req.setAttribute("rates", rateService.getAllExchangeRates());
+        req.setAttribute("currencies", currencyService.getAllCurrencies());
+
         req.getRequestDispatcher("currencies.jsp").forward(req, resp);
 
     }
@@ -65,7 +69,7 @@ public class RateServlet extends HttpServlet {
         double rate = Double.parseDouble(req.getParameter("rate"));
 
 
-        exchangeRatesDao.addExchangeRate(baseCurrencyId, targetCurrencyId, rate);
+//        exchangeRatesDao.addExchangeRate(baseCurrencyId, targetCurrencyId, rate);
         rateService.addRate(baseCurrencyId, targetCurrencyId, rate);
 
         // Redirect после POST — паттерн PRG (Post/Redirect/Get)

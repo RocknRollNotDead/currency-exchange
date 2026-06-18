@@ -1,5 +1,6 @@
 package ru.codeportfolio.db;
 
+import ru.codeportfolio.exceptions.DataAccessException;
 import ru.codeportfolio.mad.ExchangeRate;
 
 import java.sql.Connection;
@@ -39,7 +40,7 @@ public class ExchangeRatesDao {
             }
             return exchangeRates;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to fetch rates", e);
         }
     }
 
@@ -54,7 +55,7 @@ public class ExchangeRatesDao {
             stmt.executeUpdate();
             System.out.println("создался курс " + baseCurrencyId + " " + targetCurrencyId + " " + rate);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to add rate", e);
         }
     }
 
@@ -66,11 +67,11 @@ public class ExchangeRatesDao {
             stmt.setInt(1, id);
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to delete rate", e);
         }
     }
 
-    public void deleteRate2(int baseCurrencyId, int targetCurrencyId){
+    public void deleteRate(int baseCurrencyId, int targetCurrencyId){
         try (PreparedStatement stmt = conn.prepareStatement(
                 "DELETE FROM exchange_rates WHERE base_currency_id = ? AND target_currency_id = ?;"
         )){
@@ -79,7 +80,7 @@ public class ExchangeRatesDao {
             stmt.setInt(2, targetCurrencyId);
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to delete rate", e);
         }
     }
 
@@ -103,7 +104,7 @@ public class ExchangeRatesDao {
             }
             return null;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to get rate", e);
         }
     }
 
@@ -126,7 +127,7 @@ public class ExchangeRatesDao {
             }
             return null;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to get rate", e);
         }
 
     }
@@ -135,13 +136,14 @@ public class ExchangeRatesDao {
 
         try {
             PreparedStatement stmt = conn.prepareStatement(
-                    "UPDATE INTO exchange_rates (rate) VALUES (?) WHERE base_currency_id = ? AND target_currency_id = ?"
+                    "UPDATE exchange_rates SET rate = ? WHERE base_currency_id = ? AND target_currency_id = ?"
             );
-            stmt.setInt(1, baseCurrencyId);
-            stmt.setInt(2, targetCurrencyId);
+            stmt.setInt(1, rate);
+            stmt.setInt(2, baseCurrencyId);
+            stmt.setInt(3, targetCurrencyId);
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to update rate", e);
         }
     }
 
