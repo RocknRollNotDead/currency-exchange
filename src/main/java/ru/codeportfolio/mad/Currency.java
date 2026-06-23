@@ -5,13 +5,13 @@ import java.util.Objects;
 public final class Currency {
     private final int id;
     private final String code;
-    private final String fullName;
+    private final String name;
     private final String sign;
 
-    public Currency(int id, String code, String fullName, String sign) {
+    public Currency(int id, String code, String name, String sign) {
         this.id = id;
         this.code = code;
-        this.fullName = fullName;
+        this.name = name;
         this.sign = sign;
     }
 
@@ -23,8 +23,8 @@ public final class Currency {
         return code;
     }
 
-    public String getFullName() {
-        return fullName;
+    public String getName() {
+        return name;
     }
 
     public String getSign() {
@@ -38,13 +38,13 @@ public final class Currency {
         var that = (Currency) obj;
         return this.id == that.id &&
                 Objects.equals(this.code, that.code) &&
-                Objects.equals(this.fullName, that.fullName) &&
+                Objects.equals(this.name, that.name) &&
                 Objects.equals(this.sign, that.sign);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, code, fullName, sign);
+        return Objects.hash(id, code, name, sign);
     }
 
     @Override
@@ -52,7 +52,7 @@ public final class Currency {
         return "Currencies[" +
                 "id=" + id + ", " +
                 "code=" + code + ", " +
-                "fullName=" + fullName + ", " +
+                "name=" + name + ", " +
                 "sign=" + sign + ']';
     }
 

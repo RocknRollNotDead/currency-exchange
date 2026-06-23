@@ -4,14 +4,15 @@ import java.util.Objects;
 
 public final class ExchangeRate {
     private final int id;
-    private final int baseCurrencyId;
-    private final int targetCurrencyId;
+    private final Currency baseCurrency;
+    private final Currency targetCurrency;
     private final double rate;
 
-    public ExchangeRate(int id, int baseCurrencyId, int targetCurrencyId, double rate) {
+    public ExchangeRate(int id, Currency baseCurrency, Currency targetCurrency, double rate) {
         this.id = id;
-        this.baseCurrencyId = baseCurrencyId;
-        this.targetCurrencyId = targetCurrencyId;
+        this.baseCurrency = baseCurrency;
+        this.targetCurrency = targetCurrency;
+
         this.rate = rate;
     }
 
@@ -19,12 +20,12 @@ public final class ExchangeRate {
         return id;
     }
 
-    public int getBaseCurrencyId() {
-        return baseCurrencyId;
+    public Currency getBaseCurrency() {
+        return baseCurrency;
     }
 
-    public int getTargetCurrencyId() {
-        return targetCurrencyId;
+    public Currency getTargetCurrency() {
+        return targetCurrency;
     }
 
     public double getRate() {
@@ -37,22 +38,22 @@ public final class ExchangeRate {
         if (obj == null || obj.getClass() != this.getClass()) return false;
         var that = (ExchangeRate) obj;
         return this.id == that.id &&
-                this.baseCurrencyId == that.baseCurrencyId &&
-                this.targetCurrencyId == that.targetCurrencyId &&
+                this.baseCurrency == that.baseCurrency &&
+                this.targetCurrency == that.targetCurrency &&
                 Double.doubleToLongBits(this.rate) == Double.doubleToLongBits(that.rate);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, baseCurrencyId, targetCurrencyId, rate);
+        return Objects.hash(id, baseCurrency, targetCurrency, rate);
     }
 
     @Override
     public String toString() {
         return "ExchangeRates[" +
                 "id=" + id + ", " +
-                "baseCurrencyId=" + baseCurrencyId + ", " +
-                "targetCurrencyId=" + targetCurrencyId + ", " +
+                "baseCurrencyId=" + baseCurrency + ", " +
+                "targetCurrencyId=" + targetCurrency + ", " +
                 "rate=" + rate + ']';
     }
 

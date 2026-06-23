@@ -9,15 +9,18 @@ import ru.codeportfolio.mad.Currency;
 
 import java.sql.Connection;
 import java.util.List;
+import java.util.regex.Pattern;
 
 // добавить
 // удалить
 // посмотреть одну по коду
 // посмотреть все
-//
+
+// пока оставим те исключения которые есть, потом когда буду работать с сервлетами поменяю если че в зависимости от потребностей
 
 public class CurrencyService {
 
+    private static final Pattern ADMISSION_CODE = Pattern.compile("^[A-Z0-9]{3}$");
     private final CurrenciesDao currenciesDao;
 
     public CurrencyService(Connection conn) {
@@ -30,16 +33,14 @@ public class CurrencyService {
 
     public Currency getCurrency(String code){
 
-        if (code == null || code.isBlank()){
-            throw new ValidationException("code is null or empty");
-        }
-        if (!isCurrencyExist(code)){
-            throw new NotFoundException("Not found");
-        }
+        checkCodeOnEmpty(code);
+
+        code = code.toUpperCase();
 
         Currency result = currenciesDao.findByCode(code);
 
         if (result == null) {
+            System.out.println(code);
             throw new NotFoundException("currency is null");
         }
 
@@ -47,71 +48,73 @@ public class CurrencyService {
 
     }
 
-    public void checkValues(String code, String fullName, String sign){
-        // проверить код - должно быть 1. 3 символа, 2 - не должно быть то же что есть, 3. должны быть только заглавные английские буквы
 
-        // проверить полное имя - не должно быть уже в бд, только русские, латинские буквы и цифры и пробел
-        // знак - должно быть 2 символа(не больше), цифры и пробел запрещены
-    }
 
     public void addCurrency(String code, String fullName, String sign) {
-        if (code == null || code.isBlank()){
-            throw new ValidationException("code is null or empty");
-        }
-        if (isCurrencyExist(code)){
-            throw new AlreadyExistException("Failed to add");
-        }
-        if (isSignExist(sign)){
-            throw new AlreadyExistException("Failed to add. Sign is exist");
+
+        checkValuesOnEmpty(code, fullName, sign);
+
+        code = code.toUpperCase();
+
+        validateValues(code, fullName, sign);
+
+        int result;
+
+        try {
+            result = currenciesDao.addCurrency(code, fullName, sign);
+        } catch (DataAccessException e){
+            throw new AlreadyExistException("fail add", e);
         }
 
-        int result = currenciesDao.addCurrency(code, fullName, sign);
 
         if (result == 0){
             throw new DataAccessException("failed add");
         }
 
-        // что то не удалось найти нужную валюту, операция сорвалась
-
     }
 
     public void updateCurrency(String code, String fullName, String sign) {
+        checkValuesOnEmpty(code, fullName, sign);
 
+        code = code.toUpperCase();
 
-        if (!isCurrencyExist(code)){
-            throw new NotFoundException("Not found");
-        }
-
-        if (isSignExist(sign)){
-            throw new AlreadyExistException("Failed to update. Sign is exist");
-        }
+        validateValues(code, fullName, sign);
 
         int result = currenciesDao.updateCurrency(code, fullName, sign);
+
         if (result == 0){
             throw new NotFoundException("currency not found");
         }
+
     }
 
     public void deleteCurrency(String code) {
-        if (code == null || code.isBlank()){
-            throw new ValidationException("code is null or empty");
-        }
-        if (!isCurrencyExist(code)){
-            throw new NotFoundException("Not found");
-        }
+        checkCodeOnEmpty(code);
+
+        code = code.toUpperCase();
+
+        validateCode(code);
 
         int result = currenciesDao.deleteCurrency(code);
 
         if (result == 0){
-            throw new DataAccessException("Fail to delete");
+            throw new NotFoundException("Not found");
         }
 
     }
 
+    public Currency getCurrencyFromId(int id){
+        Currency currency = currenciesDao.findById(id);
+        if (currency == null){
+            throw new NotFoundException("currency not found");
+        }
+        return currency;
+    }
+
      protected int getIdFromCode(String code){
-         if (code == null || code.isBlank()){
-             throw new ValidationException("code is null or empty!");
-         }
+         checkCodeOnEmpty(code);
+         code = code.toUpperCase();
+
          Currency currency = currenciesDao.findByCode(code);
          if (currency == null){
              throw new NotFoundException("currency not found");
@@ -119,20 +122,49 @@ public class CurrencyService {
          return currency.getId();
     }
 
-    private boolean isCurrencyExist(String code){
-        return currenciesDao.findByCode(code) != null;
-//        return getCurrency(code) != null;
+
+    private void checkValuesOnEmpty(String code, String fullName, String sign){
+        checkCodeOnEmpty(code);
+        checkNameOnEmpty(fullName);
+        checkSignOnEmpty(sign);
     }
 
-    private boolean isSignExist(String sign){
-        return currenciesDao.findBySign(sign) != null;
+    private void validateValues(String code, String fullName, String sign){
+        validateCode(code);
+        validateName(fullName);
+        validateSign(sign);
     }
 
 
+    private void checkCodeOnEmpty(String code){
+        if (code == null || code.isBlank()){
+            throw new ValidationException("code is null or empty");
+        }
+    }
+    private void checkNameOnEmpty(String fullName){
+        if (fullName == null || fullName.isBlank()){
+            throw new ValidationException("full name is null or empty");
+        }
+    }
+    private void checkSignOnEmpty(String sign) {
+        if (sign == null || sign.isBlank()){
+            throw new ValidationException("sign is null or empty");
+        }
+    }
 
-
-
-
-
-
+    private void validateCode(String code){
+        if (!ADMISSION_CODE.matcher(code).matches()){       //  code.matches("^[A-Z0-9]{2,4}$")
+            throw new ValidationException("code must be latin and not many to 4 symbols");
+        }
+    }
+    private void validateName(String fullName){
+        if (fullName.length() > 40){
+            throw new ValidationException("full name is many 40");
+        }
+    }
+    private void validateSign(String sign){
+        if (sign.length() > 2){
+            throw new ValidationException("sign is many 2");
+        }
+    }
 }

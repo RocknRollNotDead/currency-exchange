@@ -38,13 +38,44 @@
         <button type="submit">Добавить</button>
     </form>
 
-    <h2>Добавить курс</h2>
-        <form method="POST" action="/rates">
-            Базовая валюта:     <input type="number" name="baseCurrencyId"/>  <br/>
-            Целевая валюта:     <input type="number" name="targetCurrencyId"/> <br/>
-            Курс:               <input type="number" name="rate"/>  <br/>
 
-            <button type="submit">Добавить</button>
-        </form>
+    <h2>Посмотреть валюту</h2>
+
+    <input type="text" id="code"/>
+    <button onclick="go()">Посмотреть</button>
+
+    <script>
+    function go() {
+        const code = document.getElementById("code").value;
+        window.location.href = "${pageContext.request.contextPath}/currencies/" + code;
+    }
+    </script>
+
+    <c:if test="${currency != null}">
+    <table border="3">
+            <tr><th>ID</th><th>Код</th><th>Название</th><th>Символ</th></tr>
+                <tr>
+                    <td>${currency.id}</td>
+                    <td>${currency.code}</td>
+                    <td>${currency.fullName}</td>
+                    <td>${currency.sign}</td>
+                </tr>
+        </table>
+    <c:if>
+
+    <input type="text" id="code2"/>
+    <input type="text" id="code3"/>
+    <button onclick="go2()">Посмотреть курс</button>
+
+
+    <script>
+    function go2() {
+        const code2 = document.getElementById("code2").value;
+        const code3 = document.getElementById("code3").value;
+
+        window.location.href = "${pageContext.request.contextPath}/rates/" + code2 + code3;
+    }
+    </script>
+
 </body>
 </html>

@@ -97,6 +97,27 @@ public class CurrenciesDao {
         }
     }
 
+    public Currency findById(int id) {
+
+        try {
+            PreparedStatement stmt = conn.prepareStatement(
+                    "SELECT * FROM currencies WHERE id = ?"
+            );
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return new Currency(rs.getInt("id"),
+                        rs.getString("code"),
+                        rs.getString("full_name"),
+                        rs.getString("sign")
+
+                );
+            }
+            return null;
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to get currency", e);
+        }
+    }
 
     public int updateCurrency(String code, String fullName, String sign) {
         try (PreparedStatement stmt = conn.prepareStatement(
@@ -123,8 +144,6 @@ public class CurrenciesDao {
             throw new DataAccessException("Failed to delete currency", e);
         }
     }
-
-
 
 
 

@@ -2,6 +2,7 @@ package ru.codeportfolio.db;
 
 import ru.codeportfolio.exceptions.DataAccessException;
 import ru.codeportfolio.mad.ExchangeRate;
+import ru.codeportfolio.services.CurrencyService;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -21,9 +22,10 @@ import java.util.List;
 public class ExchangeRatesDao {
 
     private final Connection conn;
-
+    private final CurrencyService currencyService;
     public ExchangeRatesDao(Connection conn) {
         this.conn = conn;
+        currencyService = new CurrencyService(conn);
     }
 
     public List<ExchangeRate> getAllExchangeRates() {
@@ -33,8 +35,8 @@ public class ExchangeRatesDao {
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 ExchangeRate exchangeRate = new ExchangeRate(rs.getInt("id"),
-                        rs.getInt("base_currency_id"),
-                        rs.getInt("target_currency_id"),
+                        currencyService.getCurrencyFromId(rs.getInt("base_currency_id")),
+                        currencyService.getCurrencyFromId(rs.getInt("target_currency_id")),
                         rs.getDouble("rate") );
                 exchangeRates.add(exchangeRate);
             }
@@ -44,41 +46,40 @@ public class ExchangeRatesDao {
         }
     }
 
-    public void addExchangeRate(int baseCurrencyId, int targetCurrencyId, double rate) {
+    public int addExchangeRate(int baseCurrencyId, int targetCurrencyId, double rate) {
         try (PreparedStatement stmt = conn.prepareStatement(
                 "INSERT INTO exchange_rates(base_currency_id, target_currency_id, rate) VALUES (?, ?, ?);"
         )){
-
             stmt.setInt(1, baseCurrencyId);
             stmt.setInt(2, targetCurrencyId);
             stmt.setDouble(3, rate);
-            stmt.executeUpdate();
-            System.out.println("создался курс " + baseCurrencyId + " " + targetCurrencyId + " " + rate);
+
+            return stmt.executeUpdate();
         } catch (SQLException e) {
             throw new DataAccessException("Failed to add rate", e);
         }
     }
 
-    public void deleteRate(int id){
+    public int deleteRate(int id){
         try (PreparedStatement stmt = conn.prepareStatement(
                 "DELETE FROM exchange_rates WHERE id = ?;"
         )){
 
             stmt.setInt(1, id);
-            stmt.executeUpdate();
+            return stmt.executeUpdate();
         } catch (SQLException e) {
             throw new DataAccessException("Failed to delete rate", e);
         }
     }
 
-    public void deleteRate(int baseCurrencyId, int targetCurrencyId){
+    public int deleteRate(int baseCurrencyId, int targetCurrencyId){
         try (PreparedStatement stmt = conn.prepareStatement(
                 "DELETE FROM exchange_rates WHERE base_currency_id = ? AND target_currency_id = ?;"
         )){
 
             stmt.setInt(1, baseCurrencyId);
             stmt.setInt(2, targetCurrencyId);
-            stmt.executeUpdate();
+            return stmt.executeUpdate();
         } catch (SQLException e) {
             throw new DataAccessException("Failed to delete rate", e);
         }
@@ -97,8 +98,8 @@ public class ExchangeRatesDao {
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 return new ExchangeRate(rs.getInt("id"),
-                        rs.getInt("base_currency_id"),
-                        rs.getInt("target_currency_id"),
+                        currencyService.getCurrencyFromId(rs.getInt("base_currency_id")),
+                        currencyService.getCurrencyFromId(rs.getInt("target_currency_id")),
                         rs.getDouble("rate")
                 );
             }
@@ -120,8 +121,8 @@ public class ExchangeRatesDao {
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 return new ExchangeRate(rs.getInt("id"),
-                        rs.getInt("base_currency_id"),
-                        rs.getInt("target_currency_id"),
+                        currencyService.getCurrencyFromId(rs.getInt("base_currency_id")),
+                        currencyService.getCurrencyFromId(rs.getInt("target_currency_id")),
                         rs.getDouble("rate")
                 );
             }
@@ -132,16 +133,16 @@ public class ExchangeRatesDao {
 
     }
 
-    public void changeRate(int baseCurrencyId, int targetCurrencyId, int rate){
+    public int changeRate(int baseCurrencyId, int targetCurrencyId, double rate){
 
         try {
             PreparedStatement stmt = conn.prepareStatement(
                     "UPDATE exchange_rates SET rate = ? WHERE base_currency_id = ? AND target_currency_id = ?"
             );
-            stmt.setInt(1, rate);
+            stmt.setDouble(1, rate);
             stmt.setInt(2, baseCurrencyId);
             stmt.setInt(3, targetCurrencyId);
-            stmt.executeUpdate();
+            return stmt.executeUpdate();
         } catch (SQLException e) {
             throw new DataAccessException("Failed to update rate", e);
         }
