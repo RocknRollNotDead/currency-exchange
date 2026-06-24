@@ -28,6 +28,7 @@ public class CurrenciesServlet extends HttpServlet {
         try {
             Class.forName("org.sqlite.JDBC");
             conn = DriverManager.getConnection("jdbc:sqlite:" + path);
+
         } catch (SQLException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -43,13 +44,11 @@ public class CurrenciesServlet extends HttpServlet {
         String path = req.getPathInfo();
         Gson gson = new Gson();
         String json;
-//      all currencies
+
         if (path == null || path.equals("/")){
-//            req.setAttribute("currencies", currencyService.getAllCurrencies());
             json = gson.toJson(currencyService.getAllCurrencies());
-        } else { // one currency
+        } else {
             String code = path.substring(1);
-//            req.setAttribute("currency", currencyService.getCurrency(code));
             json = gson.toJson(currencyService.getCurrency(code));
         }
 
@@ -58,61 +57,27 @@ public class CurrenciesServlet extends HttpServlet {
 
         resp.getWriter().write(json);
 
-
-
-
-//        req.getRequestDispatcher("/currencies.jsp").forward(req, resp);
-
     }
-    /*
-    *
-    * <h2>Посмотреть валюту</h2>
-        <form method="GET" action="${pageContext.request.contextPath}/currencies">
-            Код:            <input type="text" name="code"/>  <br/>
-            <button type="submit">Посмотреть</button>
-        </form>
-        *     <h2>Посмотреть курс</h2>
-        <form method="POST" action="/rate">
-            Базовая валюта:     <input type="text" name="baseCurrencyCode"/>  <br/>
-            Целевая валюта:     <input type="text" name="targetCurrencyCode"/> <br/>
-
-            <button type="submit">Посмотреть</button>
-        </form>
-
-        * */
 
     // POST — добавить новую валюту
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        BufferedReader reader = req.getReader();
-
-
-        req.setCharacterEncoding("UTF-8");
-
         Gson gson = new Gson();
 
-        Currency currency = gson.fromJson(req.getReader(), Currency.class);
+        String code = req.getParameter("code");
+        String name  = req.getParameter("name");
+        String sign = req.getParameter("sign");
 
-        currencyService.addCurrency(
-                currency.getCode(),
-                currency.getName(),
-                currency.getSign()
-        );
+        Currency result = currencyService.addCurrency(code, name, sign);
 
         resp.setContentType("application/json");
-        resp.getWriter().write("{\"status\":\"created\"}");
+        req.setCharacterEncoding("UTF-8");
 
+        String json = gson.toJson(result);
 
-//        String code = req.getParameter("code");
-//        String fullName  = req.getParameter("fullName");
-//        String sign = req.getParameter("sign");
+        resp.getWriter().write(json);
 
-//        currenciesDao.addCurrency(code, fullName, sign);
-//        currencyService.addCurrency(code, fullName, sign);
-//
-//        // Redirect после POST — паттерн PRG (Post/Redirect/Get)
-//        resp.sendRedirect(req.getContextPath() + "/rates");
     }
 }
 

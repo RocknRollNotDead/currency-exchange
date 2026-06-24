@@ -55,10 +55,9 @@ public class CurrenciesDao {
 
     public Currency findByCode(String code){
 
-        try {
-            PreparedStatement stmt = conn.prepareStatement(
+        try (PreparedStatement stmt = conn.prepareStatement(
                     "SELECT * FROM currencies WHERE code = ?"
-            );
+            )){
             stmt.setString(1, code);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
@@ -77,10 +76,10 @@ public class CurrenciesDao {
 
     public Currency findBySign(String sign){
 
-        try {
-            PreparedStatement stmt = conn.prepareStatement(
+        try
+            (PreparedStatement stmt = conn.prepareStatement(
                     "SELECT * FROM currencies WHERE sign = ?"
-            );
+            )){
             stmt.setString(1, sign);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
@@ -99,10 +98,9 @@ public class CurrenciesDao {
 
     public Currency findById(int id) {
 
-        try {
-            PreparedStatement stmt = conn.prepareStatement(
+        try (PreparedStatement stmt = conn.prepareStatement(
                     "SELECT * FROM currencies WHERE id = ?"
-            );
+            )){
             stmt.setInt(1, id);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {

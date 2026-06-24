@@ -50,7 +50,7 @@ public class CurrencyService {
 
 
 
-    public void addCurrency(String code, String fullName, String sign) {
+    public Currency addCurrency(String code, String fullName, String sign) {
 
         checkValuesOnEmpty(code, fullName, sign);
 
@@ -62,7 +62,9 @@ public class CurrencyService {
 
         try {
             result = currenciesDao.addCurrency(code, fullName, sign);
+
         } catch (DataAccessException e){
+            System.out.println(code + " " + fullName + sign);
             throw new AlreadyExistException("fail add", e);
         }
 
@@ -71,6 +73,7 @@ public class CurrencyService {
             throw new DataAccessException("failed add");
         }
 
+        return currenciesDao.findByCode(code);
     }
 
     public void updateCurrency(String code, String fullName, String sign) {

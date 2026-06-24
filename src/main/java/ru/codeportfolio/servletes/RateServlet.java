@@ -20,11 +20,10 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-@WebServlet("/exchangeRates")
-public class RateServlet extends HttpServlet {
+// при add отдавать обьект кого добавили
 
-//    private ExchangeRatesDao exchangeRatesDao;
-//    private CurrenciesDao currenciesDao;
+@WebServlet("/exchangeRates/*")
+public class RateServlet extends HttpServlet {
 
     private RateService rateService;
 
@@ -41,7 +40,7 @@ public class RateServlet extends HttpServlet {
         }
         rateService = new RateService(conn);
     }
-    // GET — показать список валют
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
@@ -49,9 +48,8 @@ public class RateServlet extends HttpServlet {
         Gson gson = new Gson();
         String json;
         if (path == null || path.equals("/")){
-//            req.setAttribute("currencies", currencyService.getAllCurrencies());
             json = gson.toJson(rateService.getAllExchangeRates());
-        } else { // one currency
+        } else {
             String request = path.substring(1);
 
             json = gson.toJson(rateService.getRate(request.substring(0,2), request.substring(3,5)));
@@ -62,49 +60,49 @@ public class RateServlet extends HttpServlet {
 
         resp.getWriter().write(json);
 
-//        req.setAttribute("rates", exchangeRatesDao.getAllExchangeRates());
-//        req.setAttribute("currencies", currenciesDao.getAllCurrencies());
-//
-//        req.setAttribute("rates", rateService.getAllExchangeRates());
-//        req.setAttribute("currencies", currencyService.getAllCurrencies());
-//
-//        req.getRequestDispatcher("currencies.jsp").forward(req, resp);
-
-
-
     }
 
-    // POST — добавить новую валюту
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
+        Gson gson = new Gson();
 
         String baseCurrencyCode = req.getParameter("baseCurrencyCode");
         String targetCurrencyCode  = req.getParameter("targetCurrencyCode");
         double rate = Double.parseDouble(req.getParameter("rate"));
 
-
-        req.setCharacterEncoding("UTF-8");
-
-        Gson gson = new Gson();
-
-        CreateRateRequest createRateRequest = gson.fromJson(req.getReader(), CreateRateRequest.class);
-
-        rateService.addRate(
-                createRateRequest.baseCurrencyCode,
-                createRateRequest.targetCurrencyCode,
-                createRateRequest.rate
-        );
+        ExchangeRate result = rateService.addRate(baseCurrencyCode, targetCurrencyCode, rate);
 
         resp.setContentType("application/json");
-        resp.getWriter().write("{\"status\":\"created\"}");
+        req.setCharacterEncoding("UTF-8");
 
-//        exchangeRatesDao.addExchangeRate(baseCurrencyId, targetCurrencyId, rate);
-//        rateService.addRate(baseCurrencyCode, targetCurrencyCode, rate);
+        String json = gson.toJson(result);
+        resp.getWriter().write(json);
 
-        // Redirect после POST — паттерн PRG (Post/Redirect/Get)
-//        resp.sendRedirect(req.getContextPath() + "/rates");
+//        resp.getWriter().write("{\"status\":\"created\"}");
+
     }
+
+    @Override
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+
+        String path = req.getPathInfo();
+        Gson gson = new Gson();
+
+        double rate = Double.parseDouble(req.getParameter("rate"));
+
+        String request = path.substring(1);
+        String baseCurrencyCode = request.substring(0,2);
+        String targetCurrencyCode = request.substring(3,5);
+
+        ExchangeRate result = rateService.changeRate(baseCurrencyCode, targetCurrencyCode, rate);
+
+        String json = gson.toJson(result);
+        resp.getWriter().write(json);
+
+    }
+
 }
 
 

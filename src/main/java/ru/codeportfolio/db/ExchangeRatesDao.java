@@ -22,7 +22,7 @@ import java.util.List;
 public class ExchangeRatesDao {
 
     private final Connection conn;
-    private final CurrencyService currencyService;
+    private CurrencyService currencyService;
     public ExchangeRatesDao(Connection conn) {
         this.conn = conn;
         currencyService = new CurrencyService(conn);
@@ -88,10 +88,9 @@ public class ExchangeRatesDao {
 
     public ExchangeRate findByBaseCurrencyIdAndTargetCurrencyId(int baseCurrencyId, int targetCurrencyId){
 
-        try {
-            PreparedStatement stmt = conn.prepareStatement(
+        try (PreparedStatement stmt = conn.prepareStatement(
                     "SELECT * FROM exchange_rates WHERE base_currency_id = ? AND target_currency_id = ?"
-            );
+            )){
             stmt.setInt(1, baseCurrencyId);
             stmt.setInt(2, targetCurrencyId);
 
@@ -110,10 +109,10 @@ public class ExchangeRatesDao {
     }
 
     public ExchangeRate findByUSD(int baseCurrencyId, int targetCurrencyId){
-        try {
-            PreparedStatement stmt = conn.prepareStatement(
+        try
+            (PreparedStatement stmt = conn.prepareStatement(
                     "SELECT * FROM exchange_rates WHERE base_currency_id = ? AND target_currency_id = ?"
-            );
+            )){
             stmt.setInt(1, baseCurrencyId);
             stmt.setInt(2, targetCurrencyId);
 
@@ -135,10 +134,9 @@ public class ExchangeRatesDao {
 
     public int changeRate(int baseCurrencyId, int targetCurrencyId, double rate){
 
-        try {
-            PreparedStatement stmt = conn.prepareStatement(
+        try (PreparedStatement stmt = conn.prepareStatement(
                     "UPDATE exchange_rates SET rate = ? WHERE base_currency_id = ? AND target_currency_id = ?"
-            );
+            )){
             stmt.setDouble(1, rate);
             stmt.setInt(2, baseCurrencyId);
             stmt.setInt(3, targetCurrencyId);

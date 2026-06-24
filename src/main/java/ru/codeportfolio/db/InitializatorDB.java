@@ -10,7 +10,7 @@ public class InitializatorDB {
         String url = "jdbc:sqlite:C:/Users/artemka/Documents/pet-projects/currency-exchange/database.db";
         try (Connection conn = DriverManager.getConnection(url);
              Statement stmt = conn.createStatement()) {
-            stmt.execute("PRAGMA foreign_keys = ON;");
+            /*stmt.execute("PRAGMA foreign_keys = ON;");
 
             stmt.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT, email TEXT);");
             stmt.execute("INSERT INTO users(name, email) VALUES ('Alice', 'mail example');");
@@ -39,7 +39,10 @@ public class InitializatorDB {
             // я сделал по тз, но мне кажется не нужно для всех валют держать 6 знаков после запятой, а держать только для тех валют, где разница не существенна.
 
             System.out.println("База работает");
+*/
 
+//            Class.forName("org.sqlite.JDBC");
+//            conn = DriverManager.getConnection(url);
         } catch (Exception e) {
             //todo обработать все ошибки создания
             e.printStackTrace();
