@@ -10,21 +10,28 @@ public class InitializatorDB {
         String url = "jdbc:sqlite:C:/Users/artemka/Documents/pet-projects/currency-exchange/database.db";
         try (Connection conn = DriverManager.getConnection(url);
              Statement stmt = conn.createStatement()) {
-            /*stmt.execute("PRAGMA foreign_keys = ON;");
 
-            stmt.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT, email TEXT);");
-            stmt.execute("INSERT INTO users(name, email) VALUES ('Alice', 'mail example');");
+
+
+            stmt.execute("DROP TABLE users");
+            stmt.execute("DROP TABLE currencies");
+            stmt.execute("DROP TABLE exchange_rates");
+
+            stmt.execute("PRAGMA foreign_keys = ON;");
+
+//            stmt.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT, email TEXT);");
+//            stmt.execute("INSERT INTO users(name, email) VALUES ('Alice', 'mail example');");
 
 
             stmt.execute("""
                     CREATE TABLE IF NOT EXISTS currencies (
                         id INTEGER PRIMARY KEY,
-                        code VARCHAR(4) NOT NULL,
+                        code VARCHAR(3) NOT NULL UNIQUE CHECK (length(code) = 3 AND code GLOB '[A-Z][A-Z][A-Z]'),
                         full_name VARCHAR(45) NOT NULL,
-                        sign VARCHAR(1) UNIQUE
+                        sign VARCHAR(2) NOT NULL CHECK (length(code) = 3)
                     );
                     """);
-            // в ТЗ было Currencies с заглавной буквы, но по правилам в sql используется snake_case. 45 - потому что я так чувствую, что больше не может быть, а меньше может. символа может не быть, yes null
+            // 45 - потому что я так чувствую, что больше не может быть, а меньше может. символа может не быть, yes null
             stmt.execute("""
                     CREATE TABLE IF NOT EXISTS exchange_rates (
                         id INTEGER PRIMARY KEY,
@@ -36,10 +43,9 @@ public class InitializatorDB {
                         UNIQUE(base_currency_id, target_currency_id)
                     );
                     """);
-            // я сделал по тз, но мне кажется не нужно для всех валют держать 6 знаков после запятой, а держать только для тех валют, где разница не существенна.
 
             System.out.println("База работает");
-*/
+
 
 //            Class.forName("org.sqlite.JDBC");
 //            conn = DriverManager.getConnection(url);

@@ -1,18 +1,13 @@
 package ru.codeportfolio.db;
 
 
+import ru.codeportfolio.exceptions.AlreadyExistException;
 import ru.codeportfolio.exceptions.DataAccessException;
 import ru.codeportfolio.mad.Currency;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-
-// добавить
-// удалить по коду
-// показать все
-// показать по коду
-// поменять по коду (для галочки, использовать я её не буду)
 
 public class CurrenciesDao {
     private final Connection conn;
@@ -43,13 +38,17 @@ public class CurrenciesDao {
         try (PreparedStatement stmt = conn.prepareStatement(
                 "INSERT INTO currencies(code, full_name, sign) VALUES (?, ?, ?);"
         )){
-
             stmt.setString(1, code);
             stmt.setString(2, fullName);
             stmt.setString(3, sign);
             return stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException("Failed to add currency", e);
+            if (!isCurrencyAlreadyExist(e)){
+                throw new DataAccessException("Failed to add currency", e);
+            }
+
+            throw new AlreadyExistException("Failed to add currency", e);
+
         }
     }
 
@@ -143,7 +142,9 @@ public class CurrenciesDao {
         }
     }
 
-
+    private boolean isCurrencyAlreadyExist(SQLException e) {
+        return e.getErrorCode() == 1062;
+    }
 
 }
 

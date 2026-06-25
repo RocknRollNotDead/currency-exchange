@@ -1,5 +1,6 @@
 package ru.codeportfolio.db;
 
+import ru.codeportfolio.exceptions.AlreadyExistException;
 import ru.codeportfolio.exceptions.DataAccessException;
 import ru.codeportfolio.mad.ExchangeRate;
 import ru.codeportfolio.services.CurrencyService;
@@ -11,18 +12,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-// добавить
-// удалить
-// поменять значение курса
-// показать все
-// показать один по id двух валют
-
-
-
 public class ExchangeRatesDao {
 
     private final Connection conn;
-    private CurrencyService currencyService;
+    private final CurrencyService currencyService;
     public ExchangeRatesDao(Connection conn) {
         this.conn = conn;
         currencyService = new CurrencyService(conn);
@@ -35,8 +28,8 @@ public class ExchangeRatesDao {
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 ExchangeRate exchangeRate = new ExchangeRate(rs.getInt("id"),
-                        currencyService.getCurrencyFromId(rs.getInt("base_currency_id")),
-                        currencyService.getCurrencyFromId(rs.getInt("target_currency_id")),
+                        currencyService.getCurrencyById(rs.getInt("base_currency_id")),
+                        currencyService.getCurrencyById(rs.getInt("target_currency_id")),
                         rs.getDouble("rate") );
                 exchangeRates.add(exchangeRate);
             }
@@ -56,7 +49,10 @@ public class ExchangeRatesDao {
 
             return stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException("Failed to add rate", e);
+            if (!isCurrencyAlreadyExist(e)){
+                throw new DataAccessException("Failed to add rate", e);
+            }
+            throw new AlreadyExistException("Failed to add rate", e);
         }
     }
 
@@ -97,8 +93,8 @@ public class ExchangeRatesDao {
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 return new ExchangeRate(rs.getInt("id"),
-                        currencyService.getCurrencyFromId(rs.getInt("base_currency_id")),
-                        currencyService.getCurrencyFromId(rs.getInt("target_currency_id")),
+                        currencyService.getCurrencyById(rs.getInt("base_currency_id")),
+                        currencyService.getCurrencyById(rs.getInt("target_currency_id")),
                         rs.getDouble("rate")
                 );
             }
@@ -120,8 +116,8 @@ public class ExchangeRatesDao {
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 return new ExchangeRate(rs.getInt("id"),
-                        currencyService.getCurrencyFromId(rs.getInt("base_currency_id")),
-                        currencyService.getCurrencyFromId(rs.getInt("target_currency_id")),
+                        currencyService.getCurrencyById(rs.getInt("base_currency_id")),
+                        currencyService.getCurrencyById(rs.getInt("target_currency_id")),
                         rs.getDouble("rate")
                 );
             }
@@ -146,7 +142,9 @@ public class ExchangeRatesDao {
         }
     }
 
-
+    private boolean isCurrencyAlreadyExist(SQLException e) {
+        return e.getErrorCode() == 1062;
+    }
 
 
 
