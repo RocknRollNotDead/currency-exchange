@@ -1,5 +1,6 @@
 package ru.codeportfolio.services;
 
+import ru.codeportfolio.db.CurrenciesDao;
 import ru.codeportfolio.db.ExchangeRatesDao;
 import ru.codeportfolio.exceptions.*;
 
@@ -7,22 +8,34 @@ import ru.codeportfolio.mad.Currency;
 import ru.codeportfolio.mad.Exchange;
 import ru.codeportfolio.mad.ExchangeRate;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 
 public class RateService {
     private static final String MAIN_CURRENCY_CODE = "USD";
 
-    private final ExchangeRatesDao exchangeRatesDao;
+//    private final ExchangeRatesDao exchangeRatesDao;
     private final CurrencyService currencyService;
-    public RateService(Connection conn) {
-        exchangeRatesDao = new ExchangeRatesDao(conn);
+    private final DataSource dataSource;
 
-        currencyService = new CurrencyService(conn);
+    public RateService(DataSource dataSource) {
+//        exchangeRatesDao = new ExchangeRatesDao(conn);
+
+        currencyService = new CurrencyService(dataSource);
+        this.dataSource = dataSource;
     }
 
     public List<ExchangeRate> getAllExchangeRates() {
-        return exchangeRatesDao.getAllExchangeRates();
+        try (Connection conn = dataSource.getConnection()) {
+
+            ExchangeRatesDao exchangeRatesDao = new ExchangeRatesDao(conn);
+            return exchangeRatesDao.getAllExchangeRates();
+        } catch (SQLException e) {
+            throw new DataAccessException("DB error", e);
+        }
+
     }
 
 
@@ -35,13 +48,20 @@ public class RateService {
         int targetCurrencyId = currencyService.getIdFromCode(targetCurrencyCode);
         int result;
 
-        result = exchangeRatesDao.addExchangeRate(baseCurrencyId, targetCurrencyId, rate);
+        try (Connection conn = dataSource.getConnection()) {
 
-        if (result == 0){
-            throw new DataAccessException("Failed add");
+            ExchangeRatesDao exchangeRatesDao = new ExchangeRatesDao(conn);
+
+            result = exchangeRatesDao.addExchangeRate(baseCurrencyId, targetCurrencyId, rate);
+
+            if (result == 0){
+                throw new DataAccessException("Failed add");
+            }
+
+            return exchangeRatesDao.findByBaseCurrencyIdAndTargetCurrencyId(baseCurrencyId, targetCurrencyId);
+        } catch (SQLException e) {
+            throw new DataAccessException("DB error", e);
         }
-
-        return exchangeRatesDao.findByBaseCurrencyIdAndTargetCurrencyId(baseCurrencyId, targetCurrencyId);
 
     }
 
@@ -52,10 +72,19 @@ public class RateService {
         int baseCurrencyId = currencyService.getIdFromCode(baseCurrencyCode);   // тут выпадает NotFoundEx
         int targetCurrencyId = currencyService.getIdFromCode(targetCurrencyCode);
 
-        int result = exchangeRatesDao.deleteRate(baseCurrencyId, targetCurrencyId);
-        if (result == 0){
-            throw new NotFoundException("Not found");
+        try (Connection conn = dataSource.getConnection()) {
+
+            ExchangeRatesDao exchangeRatesDao = new ExchangeRatesDao(conn);
+            int result = exchangeRatesDao.deleteRate(baseCurrencyId, targetCurrencyId);
+            if (result == 0){
+                throw new NotFoundException("Not found");
+            }
+
+        } catch (SQLException e) {
+            throw new DataAccessException("DB error", e);
         }
+
+
 
     }
 
@@ -66,13 +95,21 @@ public class RateService {
         int baseCurrencyId = currencyService.getIdFromCode(baseCurrencyCode); // тут упадёт exception
         int targetCurrencyId = currencyService.getIdFromCode(targetCurrencyCode);
 
-        ExchangeRate exchangeRate = exchangeRatesDao.findByBaseCurrencyIdAndTargetCurrencyId(baseCurrencyId, targetCurrencyId);
 
-        if (exchangeRate == null){
-            throw new NotFoundException("Not found");
+        try (Connection conn = dataSource.getConnection()) {
+
+            ExchangeRatesDao exchangeRatesDao = new ExchangeRatesDao(conn);
+
+            ExchangeRate exchangeRate = exchangeRatesDao.findByBaseCurrencyIdAndTargetCurrencyId(baseCurrencyId, targetCurrencyId);
+
+            if (exchangeRate == null){
+                throw new NotFoundException("Not found");
+            }
+            return exchangeRate;
+        } catch (SQLException e) {
+            throw new DataAccessException("DB error", e);
         }
 
-        return exchangeRate;
     }
 
     public ExchangeRate changeRate(String baseCurrencyCode, String targetCurrencyCode, double rate){
@@ -83,18 +120,27 @@ public class RateService {
         int baseCurrencyId = currencyService.getIdFromCode(baseCurrencyCode);
         int targetCurrencyId = currencyService.getIdFromCode(targetCurrencyCode);
 
-        int result = exchangeRatesDao.changeRate(baseCurrencyId, targetCurrencyId, rate);
+        try (Connection conn = dataSource.getConnection()) {
 
-        if (result == 0){
-            throw new NotFoundException("Not found");
+            ExchangeRatesDao exchangeRatesDao = new ExchangeRatesDao(conn);
+
+            int result = exchangeRatesDao.changeRate(baseCurrencyId, targetCurrencyId, rate);
+
+            if (result == 0){
+                throw new NotFoundException("Not found");
+            }
+
+            ExchangeRate exchangeRate = exchangeRatesDao.findByBaseCurrencyIdAndTargetCurrencyId(baseCurrencyId, targetCurrencyId);
+            if (exchangeRate != null){
+                return exchangeRate;
+            } else {
+                throw new DataAccessException("Not found");
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("DB error", e);
         }
 
-        ExchangeRate exchangeRate = exchangeRatesDao.findByBaseCurrencyIdAndTargetCurrencyId(baseCurrencyId, targetCurrencyId);
-        if (exchangeRate != null){
-            return exchangeRate;
-        } else {
-            throw new DataAccessException("Not found");
-        }
+
 
     }
 
@@ -116,52 +162,63 @@ public class RateService {
 
         // vvv Логика расчёта курса, AB, BA, USD-A - USD-B vvv
 
-        ExchangeRate exchangeRate = exchangeRatesDao.findByBaseCurrencyIdAndTargetCurrencyId(baseCurrencyId, targetCurrencyId);
+        try (Connection conn = dataSource.getConnection()) {
 
-        if (exchangeRate != null){
-            rate = exchangeRate.getRate();
-        } else {
-            exchangeRate = exchangeRatesDao.findByBaseCurrencyIdAndTargetCurrencyId(targetCurrencyId, baseCurrencyId);
 
-            if (exchangeRate != null) {
-                rate = 1 / exchangeRate.getRate();
+
+            ExchangeRatesDao exchangeRatesDao = new ExchangeRatesDao(conn);
+
+            ExchangeRate exchangeRate = exchangeRatesDao.findByBaseCurrencyIdAndTargetCurrencyId(baseCurrencyId, targetCurrencyId);
+
+            if (exchangeRate != null){
+                rate = exchangeRate.getRate();
             } else {
-                int mainCurrency = currencyService.getIdFromCode(MAIN_CURRENCY_CODE);
+                exchangeRate = exchangeRatesDao.findByBaseCurrencyIdAndTargetCurrencyId(targetCurrencyId, baseCurrencyId);
 
-                try {
-                    USDRateBase = exchangeRatesDao.findByBaseCurrencyIdAndTargetCurrencyId(baseCurrencyId, mainCurrency).getRate();
-                } catch (DataAccessException e) {
-                    try {
-                        USDRateBase = 1 / exchangeRatesDao.findByBaseCurrencyIdAndTargetCurrencyId(mainCurrency, baseCurrencyId).getRate();
-                    } catch (DataAccessException ee){
-                        throw new NotFoundException("Rate Base-USD not found!");
-                    }
-                }
+                if (exchangeRate != null) {
+                    rate = 1 / exchangeRate.getRate();
+                } else {
+                    int mainCurrency = currencyService.getIdFromCode(MAIN_CURRENCY_CODE);
 
-                try {
-                USDRateTarget = exchangeRatesDao.findByBaseCurrencyIdAndTargetCurrencyId(targetCurrencyId, mainCurrency).getRate();// упадёт датаакцесс
-                } catch (DataAccessException e) {
                     try {
-                        USDRateTarget = 1 / exchangeRatesDao.findByBaseCurrencyIdAndTargetCurrencyId(targetCurrencyId, mainCurrency).getRate();// упадёт датаакцесс
-                    } catch (DataAccessException ee){
-                        throw new NotFoundException("Rate Target-USD not found!");
+                        USDRateBase = exchangeRatesDao.findByBaseCurrencyIdAndTargetCurrencyId(baseCurrencyId, mainCurrency).getRate();
+                    } catch (DataAccessException e) {
+                        try {
+                            USDRateBase = 1 / exchangeRatesDao.findByBaseCurrencyIdAndTargetCurrencyId(mainCurrency, baseCurrencyId).getRate();
+                        } catch (DataAccessException ee){
+                            throw new NotFoundException("Rate Base-USD not found!");
+                        }
                     }
+
+                    try {
+                        USDRateTarget = exchangeRatesDao.findByBaseCurrencyIdAndTargetCurrencyId(targetCurrencyId, mainCurrency).getRate();// упадёт датаакцесс
+                    } catch (DataAccessException e) {
+                        try {
+                            USDRateTarget = 1 / exchangeRatesDao.findByBaseCurrencyIdAndTargetCurrencyId(targetCurrencyId, mainCurrency).getRate();// упадёт датаакцесс
+                        } catch (DataAccessException ee){
+                            throw new NotFoundException("Rate Target-USD not found!");
+                        }
+                    }
+                    System.out.println(USDRateBase + " " + USDRateTarget);
+                    rate = USDRateBase / USDRateTarget;
                 }
-                System.out.println(USDRateBase + " " + USDRateTarget);
-                rate = USDRateBase / USDRateTarget;
             }
+
+            if (rate == 0){
+                throw new NotFoundException("Rate not found");
+            }
+
+            double result = amount * rate;
+
+            result = routingRateToSixSymbolsAfterDot(result);
+
+            return new Exchange(baseCurrency, targetCurrency, rate, amount, result);
+
+
+
+        } catch (SQLException e) {
+            throw new DataAccessException("DB error", e);
         }
-
-        if (rate == 0){
-            throw new NotFoundException("Rate not found");
-        }
-
-        double result = amount * rate;
-
-        result = routingRateToSixSymbolsAfterDot(result);
-
-        return new Exchange(baseCurrency, targetCurrency, rate, amount, result);
-
 
     }
 

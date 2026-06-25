@@ -6,7 +6,9 @@ import ru.codeportfolio.exceptions.NotFoundException;
 import ru.codeportfolio.exceptions.ValidationException;
 import ru.codeportfolio.mad.Currency;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -17,27 +19,46 @@ public class CurrencyService {
     private static final int MAX_NAME_LENGTH = 45;
     private static final int SIGN_LENGTH = 2;
 
-    private final CurrenciesDao currenciesDao;
+    private final DataSource dataSource;
+//    private final CurrenciesDao currenciesDao;
 
-    public CurrencyService(Connection conn) {
-        currenciesDao = new CurrenciesDao(conn);
+    public CurrencyService(DataSource dataSource) {
+//        currenciesDao = new CurrenciesDao(conn);
+        this.dataSource = dataSource;
+
     }
 
     public List<Currency> getAllCurrencies() {
-        return currenciesDao.getAllCurrencies();
+
+
+        try (Connection conn = dataSource.getConnection()) {
+
+            CurrenciesDao currenciesDao = new CurrenciesDao(conn);
+            return currenciesDao.getAllCurrencies();
+        } catch (SQLException e) {
+            throw new DataAccessException("DB error", e);
+        }
     }
 
     public Currency getCurrency(String code){
 
         code = normalizeCode(code);
+        Currency result;
 
-        Currency result = currenciesDao.findByCode(code);
+        try (Connection conn = dataSource.getConnection()) {
+            CurrenciesDao currenciesDao = new CurrenciesDao(conn);
+            result = currenciesDao.findByCode(code);
 
-        if (result == null) {
-            throw new NotFoundException("Currency is not found");
+            if (result == null) {
+                throw new NotFoundException("Currency is not found");
+            }
+
+            return result;
+        } catch (SQLException e) {
+            throw new DataAccessException("DB error", e);
         }
 
-        return result;
+
     }
 
     public Currency addCurrency(String code, String fullName, String sign) {
@@ -49,13 +70,23 @@ public class CurrencyService {
 
         int result;
 
-        result = currenciesDao.addCurrency(code, fullName, sign);
+        try (Connection conn = dataSource.getConnection()) {
+            CurrenciesDao currenciesDao = new CurrenciesDao(conn);
 
-        if (result == 0){
-            throw new DataAccessException("Failed add");
+            result = currenciesDao.addCurrency(code, fullName, sign);
+
+            if (result == 0){
+                throw new DataAccessException("Failed add");
+            }
+
+            return currenciesDao.findByCode(code);
+
+
+        } catch (SQLException e) {
+            throw new DataAccessException("DB error", e);
         }
 
-        return currenciesDao.findByCode(code);
+
     }
 
     public void updateCurrency(String code, String fullName, String sign) {
@@ -65,11 +96,21 @@ public class CurrencyService {
 
         validateValues(code, fullName, sign);
 
-        int result = currenciesDao.updateCurrency(code, fullName, sign);
+        try (Connection conn = dataSource.getConnection()) {
 
-        if (result == 0){
-            throw new NotFoundException("Currency not found");
+            CurrenciesDao currenciesDao = new CurrenciesDao(conn);
+
+            int result = currenciesDao.updateCurrency(code, fullName, sign);
+
+            if (result == 0){
+                throw new NotFoundException("Currency not found");
+            }
+
+        } catch (SQLException e) {
+            throw new DataAccessException("DB error", e);
         }
+
+
 
     }
 
@@ -78,31 +119,64 @@ public class CurrencyService {
 
         validateCode(code);
 
-        int result = currenciesDao.deleteCurrency(code);
+        try (Connection conn = dataSource.getConnection()) {
 
-        if (result == 0){
-            throw new NotFoundException("Not found");
+            CurrenciesDao currenciesDao = new CurrenciesDao(conn);
+
+            int result = currenciesDao.deleteCurrency(code);
+
+            if (result == 0){
+                throw new NotFoundException("Not found");
+            }
+
+        } catch (SQLException e) {
+            throw new DataAccessException("DB error", e);
         }
+
+
 
     }
 
     public Currency getCurrencyById(int id){
-        Currency currency = currenciesDao.findById(id);
-        if (currency == null){
-            throw new NotFoundException("Currency not found");
+
+        try (Connection conn = dataSource.getConnection()) {
+
+            CurrenciesDao currenciesDao = new CurrenciesDao(conn);
+
+            Currency currency = currenciesDao.findById(id);
+            if (currency == null){
+                throw new NotFoundException("Currency not found");
+            }
+            return currency;
+
+        } catch (SQLException e) {
+            throw new DataAccessException("DB error", e);
         }
-        return currency;
+
+
+
     }
 
      protected int getIdFromCode(String code){
          code = normalizeCode(code);
 
-         Currency currency = currenciesDao.findByCode(code);
-         if (currency == null){
-             throw new NotFoundException("Currency not found " + code);
+         try (Connection conn = dataSource.getConnection()) {
+
+             CurrenciesDao currenciesDao = new CurrenciesDao(conn);
+
+             Currency currency = currenciesDao.findByCode(code);
+             if (currency == null){
+                 throw new NotFoundException("Currency not found " + code);
+             }
+             return currency.getId();
+
+         } catch (SQLException e) {
+             throw new DataAccessException("DB error", e);
          }
-         return currency.getId();
+
+
     }
+
 
 
 

@@ -1,6 +1,8 @@
 package ru.codeportfolio.servletes;
 
 import com.google.gson.Gson;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -10,6 +12,7 @@ import ru.codeportfolio.exceptions.*;
 import ru.codeportfolio.mad.Exchange;
 import ru.codeportfolio.services.RateService;
 
+import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -20,19 +23,30 @@ import java.util.Map;
 @WebServlet("/exchange")
 public class ExchangeServlet extends HttpServlet {
     private RateService rateService;
+    private DataSource dataSource;
     Gson gson = new Gson();
 
     public void init(){
         String path = "C:/Users/artemka/Documents/pet-projects/currency-exchange/database.db"; // пришлось захардкодить, иначе он искал в папке C:\Users\artemka\.SmartTomcat\currency-exchange\currency-exchangedatabase.db
-        Connection conn;
+
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl("jdbc:sqlite:" + path);
+        config.setMaximumPoolSize(10); // сколько соединений держать одновременно
 
         try {
+            Class.forName("org.sqlite.JDBC");
+            dataSource = new HikariDataSource(config);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        /*try {
             Class.forName("org.sqlite.JDBC");
             conn = DriverManager.getConnection("jdbc:sqlite:" + path);
         } catch (SQLException | ClassNotFoundException e) {
             throw new RuntimeException(e);
-        }
-        rateService = new RateService(conn);
+        }*/
+        rateService = new RateService(dataSource);
     }
 
     @Override
@@ -98,7 +112,12 @@ public class ExchangeServlet extends HttpServlet {
 
     }
 
-
+    @Override
+    public void destroy() {
+        if (dataSource instanceof HikariDataSource hikari) {
+            hikari.close();
+        }
+    }
 
 
 

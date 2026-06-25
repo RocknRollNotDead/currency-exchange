@@ -1,6 +1,8 @@
 package ru.codeportfolio.servletes;
 
 import com.google.gson.Gson;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -10,6 +12,7 @@ import ru.codeportfolio.exceptions.*;
 import ru.codeportfolio.mad.ExchangeRate;
 import ru.codeportfolio.services.RateService;
 
+import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -24,19 +27,24 @@ import java.util.stream.Collectors;
 public class RateServlet extends HttpServlet {
 
     private RateService rateService;
+    private DataSource dataSource;
     private final Gson gson = new Gson();
 
     public void init(){
         String path = "C:/Users/artemka/Documents/pet-projects/currency-exchange/database.db"; // пришлось захардкодить, иначе он искал в папке C:\Users\artemka\.SmartTomcat\currency-exchange\currency-exchangedatabase.db
-        Connection conn;
+
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl("jdbc:sqlite:" + path);
+        config.setMaximumPoolSize(10); // сколько соединений держать одновременно
 
         try {
             Class.forName("org.sqlite.JDBC");
-            conn = DriverManager.getConnection("jdbc:sqlite:" + path);
-        } catch (SQLException | ClassNotFoundException e) {
+            dataSource = new HikariDataSource(config);
+        } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
-        rateService = new RateService(conn);
+
+        rateService = new RateService(dataSource);
     }
 
     @Override
@@ -44,8 +52,6 @@ public class RateServlet extends HttpServlet {
             throws ServletException, IOException {
 
         // я новичок, поэтому буду обрабатывать exceptions прямо здесь
-
-        String json;
 
         try {
             if ("PATCH".equalsIgnoreCase(req.getMethod())) {
@@ -107,7 +113,6 @@ public class RateServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-//        Gson gson = new Gson();
 
         String baseCurrencyCode = req.getParameter("baseCurrencyCode");
         String targetCurrencyCode  = req.getParameter("targetCurrencyCode");
@@ -131,9 +136,6 @@ public class RateServlet extends HttpServlet {
             throws ServletException, IOException {
 
         String path = req.getPathInfo();
-//        Gson gson = new Gson();
-
-//        String body = reader.lines().collect(Collectors.joining());
         String body = req.getReader().lines().collect(Collectors.joining());
         String[] parts = body.split("=");
 
@@ -157,6 +159,13 @@ public class RateServlet extends HttpServlet {
         String jsonObj = gson.toJson(result);
         resp.getWriter().write(jsonObj);
 
+    }
+
+    @Override
+    public void destroy() {
+        if (dataSource instanceof HikariDataSource hikari) {
+            hikari.close();
+        }
     }
 
 }

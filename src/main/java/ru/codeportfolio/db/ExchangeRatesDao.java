@@ -2,6 +2,7 @@ package ru.codeportfolio.db;
 
 import ru.codeportfolio.exceptions.AlreadyExistException;
 import ru.codeportfolio.exceptions.DataAccessException;
+import ru.codeportfolio.mad.Currency;
 import ru.codeportfolio.mad.ExchangeRate;
 import ru.codeportfolio.services.CurrencyService;
 
@@ -15,10 +16,12 @@ import java.util.List;
 public class ExchangeRatesDao {
 
     private final Connection conn;
-    private final CurrencyService currencyService;
+    private final CurrenciesDao currenciesDao;
+
     public ExchangeRatesDao(Connection conn) {
         this.conn = conn;
-        currencyService = new CurrencyService(conn);
+        currenciesDao = new CurrenciesDao(conn);
+
     }
 
     public List<ExchangeRate> getAllExchangeRates() {
@@ -28,8 +31,8 @@ public class ExchangeRatesDao {
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 ExchangeRate exchangeRate = new ExchangeRate(rs.getInt("id"),
-                        currencyService.getCurrencyById(rs.getInt("base_currency_id")),
-                        currencyService.getCurrencyById(rs.getInt("target_currency_id")),
+                        currenciesDao.findById(rs.getInt("base_currency_id")),
+                        currenciesDao.findById(rs.getInt("target_currency_id")),
                         rs.getDouble("rate") );
                 exchangeRates.add(exchangeRate);
             }
@@ -80,10 +83,72 @@ public class ExchangeRatesDao {
             throw new DataAccessException("Failed to delete rate", e);
         }
     }
+/*
 
+        """
+        SELECT er.id, bc.id as bc_id, bc.code as bc_code, bc.full_name as bc_name, bc.sign as bc_sign,
+                tc.id AS tc_id, tc.code as tc_code, tc.full_name as tc_name, tc.sign as tc_sign, er.rate
+         FROM exchange_rates er
+         JOIN currencies bc ON bc.id = er.base_currency_id
+         JOIN currencies tc ON tc.id = er.target_currency_id
+         WHERE base_currency_id = ? AND target_currency_id = ?
+
+
+         """
+
+        String sql = """
+        SELECT er.id, bc.id as bc_id, bc.code as bc_code, bc.full_name as bc_name, bc.sign as bc_sign,
+                tc.id AS tc_id, tc.code as tc_code, tc.full_name as tc_name, tc.sign as tc_sign, er.rate
+         FROM exchange_rates er
+         JOIN currencies bc ON bc.id = er.base_currency_id
+         JOIN currencies tc ON tc.id = er.target_currency_id
+         WHERE base_currency_id = ? AND target_currency_id = ?
+        """;
+
+    try (PreparedStatement stmt = conn.prepareStatement(sql)){
+        stmt.setInt(1, baseCurrencyId);
+        stmt.setInt(2, targetCurrencyId);
+        try (ResultSet rs = stmt.executeQuery()) {
+
+            if (rs.next()) {
+
+                Currency baseCurrency = new Currency(
+                        rs.getInt("bc_id"),
+                        rs.getString("bc_code"),
+                        rs.getString("bc_name"),
+                        rs.getString("bc_sign")
+                );
+
+                Currency targetCurrency = new Currency(
+                        rs.getInt("tc_id"),
+                        rs.getString("tc_code"),
+                        rs.getString("tc_name"),
+                        rs.getString("tc_sign")
+                );
+
+                ExchangeRate exchangeRate = new ExchangeRate(
+                        rs.getInt("id"),
+                        baseCurrency,
+                        targetCurrency,
+                        rs.getDouble("rate")
+                );
+
+                return exchangeRate;
+            }
+
+            return null;
+        }
+    } catch (SQLException e) {
+        throw new DataAccessException("Failed to get rate", e);
+    }
+
+
+
+
+ */
 
     public ExchangeRate findByBaseCurrencyIdAndTargetCurrencyId(int baseCurrencyId, int targetCurrencyId){
-
+/*
         try (PreparedStatement stmt = conn.prepareStatement(
                     "SELECT * FROM exchange_rates WHERE base_currency_id = ? AND target_currency_id = ?"
             )){
@@ -93,40 +158,63 @@ public class ExchangeRatesDao {
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 return new ExchangeRate(rs.getInt("id"),
-                        currencyService.getCurrencyById(rs.getInt("base_currency_id")),
-                        currencyService.getCurrencyById(rs.getInt("target_currency_id")),
+                        currenciesDao.findById(rs.getInt("base_currency_id")),
+                        currenciesDao.findById(rs.getInt("target_currency_id")),
                         rs.getDouble("rate")
                 );
             }
             return null;
         } catch (SQLException e) {
             throw new DataAccessException("Failed to get rate", e);
-        }
-    }
+        }*/
 
-    public ExchangeRate findByUSD(int baseCurrencyId, int targetCurrencyId){
-        try
-            (PreparedStatement stmt = conn.prepareStatement(
-                    "SELECT * FROM exchange_rates WHERE base_currency_id = ? AND target_currency_id = ?"
-            )){
+
+        String sql = """
+        SELECT er.id, bc.id as bc_id, bc.code as bc_code, bc.full_name as bc_name, bc.sign as bc_sign,
+                tc.id AS tc_id, tc.code as tc_code, tc.full_name as tc_name, tc.sign as tc_sign, er.rate
+        FROM exchange_rates er
+        JOIN currencies bc ON bc.id = er.base_currency_id
+        JOIN currencies tc ON tc.id = er.target_currency_id
+        WHERE base_currency_id = ? AND target_currency_id = ?
+        """;
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)){
             stmt.setInt(1, baseCurrencyId);
             stmt.setInt(2, targetCurrencyId);
+            try (ResultSet rs = stmt.executeQuery()) {
 
+                if (rs.next()) {
 
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return new ExchangeRate(rs.getInt("id"),
-                        currencyService.getCurrencyById(rs.getInt("base_currency_id")),
-                        currencyService.getCurrencyById(rs.getInt("target_currency_id")),
-                        rs.getDouble("rate")
-                );
+                    Currency baseCurrency = new Currency(
+                            rs.getInt("bc_id"),
+                            rs.getString("bc_code"),
+                            rs.getString("bc_name"),
+                            rs.getString("bc_sign")
+                    );
+
+                    Currency targetCurrency = new Currency(
+                            rs.getInt("tc_id"),
+                            rs.getString("tc_code"),
+                            rs.getString("tc_name"),
+                            rs.getString("tc_sign")
+                    );
+
+                    return new ExchangeRate(
+                            rs.getInt("id"),
+                            baseCurrency,
+                            targetCurrency,
+                            rs.getDouble("rate")
+                    );
+                }
+
+                return null;
             }
-            return null;
         } catch (SQLException e) {
             throw new DataAccessException("Failed to get rate", e);
         }
 
     }
+
 
     public int changeRate(int baseCurrencyId, int targetCurrencyId, double rate){
 
@@ -143,7 +231,7 @@ public class ExchangeRatesDao {
     }
 
     private boolean isCurrencyAlreadyExist(SQLException e) {
-        return e.getErrorCode() == 1062;
+        return e.getMessage() != null && e.getMessage().contains("UNIQUE constraint failed");
     }
 
 

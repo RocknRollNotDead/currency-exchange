@@ -24,7 +24,6 @@ import java.util.Map;
 @WebServlet(urlPatterns = {"/currency/*", "/currencies"})
 public class CurrenciesServlet extends HttpServlet {
 
-//    private CurrenciesDao currenciesDao;
     private CurrencyService currencyService;
     private DataSource dataSource;
     private final Gson gson = new Gson();
@@ -36,19 +35,15 @@ public class CurrenciesServlet extends HttpServlet {
         config.setJdbcUrl("jdbc:sqlite:" + path);
         config.setMaximumPoolSize(10); // сколько соединений держать одновременно
 
-        dataSource = new HikariDataSource(config);
-        Connection conn;
-
         try {
             Class.forName("org.sqlite.JDBC");
-            conn = DriverManager.getConnection("jdbc:sqlite:" + path);
-
-        } catch (SQLException | ClassNotFoundException e) {
+            dataSource = new HikariDataSource(config);
+        } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
-        currencyService = new CurrencyService(conn);
+
+        currencyService = new CurrencyService(dataSource);
     }
-    // GET — показать список валют
 
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
         try{
@@ -105,7 +100,6 @@ public class CurrenciesServlet extends HttpServlet {
 
     }
 
-    // POST — добавить новую валюту
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
