@@ -8,6 +8,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import ru.codeportfolio.DTO.CurrencyDto;
 import ru.codeportfolio.exceptions.*;
 import ru.codeportfolio.mad.Currency;
 import ru.codeportfolio.services.CurrencyService;
@@ -45,38 +46,6 @@ public class CurrenciesServlet extends HttpServlet {
         currencyService = new CurrencyService(dataSource);
     }
 
-    protected void service(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-        try{
-            super.service(req, resp);
-
-        }   catch (NotFoundException e){
-            sendException(resp, e, HttpServletResponse.SC_NOT_FOUND); // 404
-
-        } catch (ValidationException e){
-            sendException(resp, e, HttpServletResponse.SC_BAD_REQUEST); // 400
-
-        } catch (AlreadyExistException | SelfRatingException e){
-            sendException(resp, e, HttpServletResponse.SC_CONFLICT); // 409
-
-        } catch (DataAccessException | IOException e){
-            sendException(resp, e, HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // 500
-
-        }
-
-    }
-
-    private void sendException(HttpServletResponse resp, Exception e, int httpCode){
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("UTF-8");
-        resp.setStatus(httpCode);
-        String json = gson.toJson(Map.of("message", e.getMessage()));
-        try (PrintWriter writer = resp.getWriter() ){
-            writer.write(json);
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
@@ -92,9 +61,6 @@ public class CurrenciesServlet extends HttpServlet {
             json = gson.toJson(currencyService.getCurrency(code));
         }
 
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("UTF-8");
-
         resp.setStatus(HttpServletResponse.SC_OK); // 200
         resp.getWriter().write(json);
 
@@ -108,10 +74,8 @@ public class CurrenciesServlet extends HttpServlet {
         String name  = req.getParameter("name");
         String sign = req.getParameter("sign");
 
-        Currency result = currencyService.addCurrency(code, name, sign);
+        CurrencyDto result = currencyService.addCurrency(code, name, sign);
 
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("UTF-8");
 
         if (result != null){
             resp.setStatus(HttpServletResponse.SC_CREATED); // 201

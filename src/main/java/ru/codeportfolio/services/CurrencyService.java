@@ -1,10 +1,12 @@
 package ru.codeportfolio.services;
 
+import ru.codeportfolio.DTO.CurrencyDto;
 import ru.codeportfolio.db.CurrenciesDao;
 import ru.codeportfolio.exceptions.DataAccessException;
 import ru.codeportfolio.exceptions.NotFoundException;
 import ru.codeportfolio.exceptions.ValidationException;
 import ru.codeportfolio.mad.Currency;
+import ru.codeportfolio.mapper.CurrencyMapper;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -20,27 +22,27 @@ public class CurrencyService {
     private static final int SIGN_LENGTH = 2;
 
     private final DataSource dataSource;
-//    private final CurrenciesDao currenciesDao;
 
     public CurrencyService(DataSource dataSource) {
-//        currenciesDao = new CurrenciesDao(conn);
         this.dataSource = dataSource;
 
     }
 
-    public List<Currency> getAllCurrencies() {
+    public List<CurrencyDto> getAllCurrencies() {
 
 
         try (Connection conn = dataSource.getConnection()) {
 
             CurrenciesDao currenciesDao = new CurrenciesDao(conn);
-            return currenciesDao.getAllCurrencies();
+
+            return CurrencyMapper.INSTANCE.toDtoList(currenciesDao.getAllCurrencies());
+
         } catch (SQLException e) {
             throw new DataAccessException("DB error", e);
         }
     }
 
-    public Currency getCurrency(String code){
+    public CurrencyDto getCurrency(String code){
 
         code = normalizeCode(code);
         Currency result;
@@ -53,15 +55,13 @@ public class CurrencyService {
                 throw new NotFoundException("Currency is not found");
             }
 
-            return result;
+            return CurrencyMapper.INSTANCE.toDto(result);
         } catch (SQLException e) {
             throw new DataAccessException("DB error", e);
         }
-
-
     }
 
-    public Currency addCurrency(String code, String fullName, String sign) {
+    public CurrencyDto addCurrency(String code, String fullName, String sign) {
 
         checkValuesOnEmpty(code, fullName, sign);
         code = code.toUpperCase();
@@ -79,7 +79,7 @@ public class CurrencyService {
                 throw new DataAccessException("Failed add");
             }
 
-            return currenciesDao.findByCode(code);
+            return CurrencyMapper.INSTANCE.toDto(currenciesDao.findByCode(code));
 
 
         } catch (SQLException e) {
@@ -89,7 +89,7 @@ public class CurrencyService {
 
     }
 
-    public void updateCurrency(String code, String fullName, String sign) {
+    public CurrencyDto updateCurrency(String code, String fullName, String sign) {
         checkValuesOnEmpty(code, fullName, sign);
 
         code = code.toUpperCase();
@@ -105,6 +105,8 @@ public class CurrencyService {
             if (result == 0){
                 throw new NotFoundException("Currency not found");
             }
+
+            return CurrencyMapper.INSTANCE.toDto(currenciesDao.findByCode(code));
 
         } catch (SQLException e) {
             throw new DataAccessException("DB error", e);
@@ -137,7 +139,7 @@ public class CurrencyService {
 
     }
 
-    public Currency getCurrencyById(int id){
+    public CurrencyDto getCurrencyById(int id){
 
         try (Connection conn = dataSource.getConnection()) {
 
@@ -147,14 +149,11 @@ public class CurrencyService {
             if (currency == null){
                 throw new NotFoundException("Currency not found");
             }
-            return currency;
+            return CurrencyMapper.INSTANCE.toDto(currency);
 
         } catch (SQLException e) {
             throw new DataAccessException("DB error", e);
         }
-
-
-
     }
 
      protected int getIdFromCode(String code){
@@ -168,7 +167,7 @@ public class CurrencyService {
              if (currency == null){
                  throw new NotFoundException("Currency not found " + code);
              }
-             return currency.getId();
+             return currency.id();
 
          } catch (SQLException e) {
              throw new DataAccessException("DB error", e);
@@ -196,12 +195,6 @@ public class CurrencyService {
         validateName(fullName);
         validateSign(sign);
     }
-
-
-    private void checkCodeOnEmpty(String code){
-        checkStringOnEmptyAndThrowExeption(code, "Code");
-    }
-
 
     private void checkStringOnEmptyAndThrowExeption(String s, String name){
         if (s == null || s.isBlank()){

@@ -8,25 +8,24 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import ru.codeportfolio.DTO.ExchangeRateDto;
 import ru.codeportfolio.exceptions.*;
 import ru.codeportfolio.mad.ExchangeRate;
-import ru.codeportfolio.services.RateService;
+import ru.codeportfolio.services.ExchangeRateService;
 
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 // при add отдавать обьект кого добавили
 
 @WebServlet(urlPatterns = {"/exchangeRate/*", "/exchangeRates"})
-public class RateServlet extends HttpServlet {
+public class ExchangeRatesServlet extends HttpServlet {
 
-    private RateService rateService;
+    private ExchangeRateService exchangeRateService;
     private DataSource dataSource;
     private final Gson gson = new Gson();
 
@@ -44,7 +43,7 @@ public class RateServlet extends HttpServlet {
             throw new RuntimeException(e);
         }
 
-        rateService = new RateService(dataSource);
+        exchangeRateService = new ExchangeRateService(dataSource);
     }
 
     @Override
@@ -53,39 +52,13 @@ public class RateServlet extends HttpServlet {
 
         // я новичок, поэтому буду обрабатывать exceptions прямо здесь
 
-        try {
             if ("PATCH".equalsIgnoreCase(req.getMethod())) {
                 doPatch(req, resp);
 
             } else {
                 super.service(req, resp);
             }
-        }  catch (NotFoundException e){
-            sendException(resp, e, HttpServletResponse.SC_NOT_FOUND); // 404
 
-        } catch (ValidationException e){
-            sendException(resp, e, HttpServletResponse.SC_BAD_REQUEST); // 400
-
-        } catch (AlreadyExistException | SelfRatingException e){
-            sendException(resp, e, HttpServletResponse.SC_CONFLICT); // 409
-
-        } catch (DataAccessException | IOException e){
-            sendException(resp, e, HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // 500
-
-        }
-
-    }
-
-    private void sendException(HttpServletResponse resp, Exception e, int httpCode){
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("UTF-8");
-        resp.setStatus(httpCode);
-        String json = gson.toJson(Map.of("message", e.getMessage()));
-        try (PrintWriter writer = resp.getWriter() ){
-            writer.write(json);
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
     }
 
     @Override
@@ -94,16 +67,13 @@ public class RateServlet extends HttpServlet {
         String path = req.getPathInfo();
         Gson gson = new Gson();
         String json;
-        if (path == null || path.equals("/")){ // знаю про очистку от /USD/give/one/response, но в spring boot оно само это делается, а тут только код засорит
-            json = gson.toJson(rateService.getAllExchangeRates());
+        if (path == null || path.equals("/")){ // знаю про очистку от rateService.getRate("/USD/give/one/response"),
+            json = gson.toJson(exchangeRateService.getAllExchangeRates()); // но в spring boot оно само это делается, а тут только код засорит
         } else {
             String request = path.substring(1);
 
-            json = gson.toJson(rateService.getRate(request.substring(0,2), request.substring(3,5)));
+            json = gson.toJson(exchangeRateService.getRate(request.substring(0,2), request.substring(3,5)));
         }
-
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("UTF-8");
 
         resp.setStatus(HttpServletResponse.SC_OK); // 200
         resp.getWriter().write(json);
@@ -116,12 +86,9 @@ public class RateServlet extends HttpServlet {
 
         String baseCurrencyCode = req.getParameter("baseCurrencyCode");
         String targetCurrencyCode  = req.getParameter("targetCurrencyCode");
-        double rate = Double.parseDouble(req.getParameter("rate"));
+        String rate = req.getParameter("rate");
 
-        ExchangeRate result = rateService.addRate(baseCurrencyCode, targetCurrencyCode, rate);
-
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("UTF-8");
+        ExchangeRateDto result = exchangeRateService.addRate(baseCurrencyCode, targetCurrencyCode, rate);
 
         if (result != null){
             resp.setStatus(HttpServletResponse.SC_CREATED); // 201
@@ -139,19 +106,14 @@ public class RateServlet extends HttpServlet {
         String body = req.getReader().lines().collect(Collectors.joining());
         String[] parts = body.split("=");
 
-        double rate;
-        try{
-            rate = Double.parseDouble(parts[1]);
-        }catch (NullPointerException e) {
-            throw new ValidationException("must be not null");
-        }
+        String rate = parts[1];
 
         String request = path.substring(1);
 
         String baseCurrencyCode = request.substring(0,3);
         String targetCurrencyCode = request.substring(3,6);
 
-        ExchangeRate result = rateService.changeRate(baseCurrencyCode, targetCurrencyCode, rate);
+        ExchangeRateDto result = exchangeRateService.changeRate(baseCurrencyCode, targetCurrencyCode, rate);
 
         if (result != null){
             resp.setStatus(HttpServletResponse.SC_OK); // 200

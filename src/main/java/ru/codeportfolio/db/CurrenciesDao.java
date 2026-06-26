@@ -73,28 +73,6 @@ public class CurrenciesDao {
         }
     }
 
-    public Currency findBySign(String sign){
-
-        try
-            (PreparedStatement stmt = conn.prepareStatement(
-                    "SELECT * FROM currencies WHERE sign = ?"
-            )){
-            stmt.setString(1, sign);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return new Currency(rs.getInt("id"),
-                        rs.getString("code"),
-                        rs.getString("full_name"),
-                        rs.getString("sign")
-
-                );
-            }
-            return null;
-        } catch (SQLException e) {
-            throw new DataAccessException("Failed to get currency", e);
-        }
-    }
-
     public Currency findById(int id) {
 
         try (PreparedStatement stmt = conn.prepareStatement(
@@ -143,7 +121,7 @@ public class CurrenciesDao {
     }
 
     private boolean isCurrencyAlreadyExist(SQLException e) {
-        return e.getErrorCode() == 1062;
+        return e.getMessage() != null && e.getMessage().contains("UNIQUE constraint failed");
     }
 
 }
