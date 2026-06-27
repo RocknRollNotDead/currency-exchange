@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.codeportfolio.exceptions.*;
 
 import java.io.IOException;
@@ -13,6 +15,8 @@ import java.util.Map;
 @WebFilter ("/*")
 public class CurrencyExchangeFilter implements Filter {
 
+
+    private static final Logger log = LoggerFactory.getLogger(CurrencyExchangeFilter.class);
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
@@ -35,11 +39,9 @@ public class CurrencyExchangeFilter implements Filter {
         } catch (AlreadyExistException | SelfRatingException e){
             sendException(resp, e, HttpServletResponse.SC_CONFLICT); // 409
 
-        } catch (DataAccessException  e){
-            sendException(resp, e, HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // 500
-
         } catch (Exception e){
-            sendException(resp, e, HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // 500
+            log.error("e: ", e);
+            throw new RuntimeException(e);
         }
 
 
