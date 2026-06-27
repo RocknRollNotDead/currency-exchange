@@ -51,15 +51,27 @@ public class ExchangeRatesServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
+        String servletPath = req.getServletPath();
         String path = req.getPathInfo();
         Gson gson = new Gson();
         String json;
-        if (path == null || path.equals("/")){ // знаю про очистку от rateService.getRate("/USD/give/one/response"),
+        String request;
+        if (servletPath.equals("/exchangeRates")) { // знаю про очистку от rateService.getRate("/USD/give/one/response"),
             json = gson.toJson(exchangeRateService.getAllExchangeRates()); // но в spring boot оно само это делается, а тут только код засорит
-        } else {
-            String request = path.substring(1);
 
-            json = gson.toJson(exchangeRateService.getRate(request.substring(0,2), request.substring(3,5)));
+        } else {
+
+            try{
+                request = path.substring(1);
+            } catch (NullPointerException e){
+                throw new UncorrectRequestException("request must be not null");
+            }
+            try{
+                json = gson.toJson(exchangeRateService.getRate(request.substring(0, 3), request.substring(3, 6)));
+            } catch (StringIndexOutOfBoundsException e) {
+                throw new UncorrectRequestException("Uncorrect request. Request must be \"USDEUR\", for example", e);
+            }
+
         }
 
         resp.setStatus(HttpServletResponse.SC_OK); // 200
@@ -107,11 +119,17 @@ public class ExchangeRatesServlet extends HttpServlet {
 
 
         String request = path.substring(1);
+        ExchangeRateDto result;
+        try{
+            String baseCurrencyCode = request.substring(0,3);
+            String targetCurrencyCode = request.substring(3,6); // в рамках учебного проекта опустим возможность запросов /USDABCDEFGCYUEUHUHU.
+            result = exchangeRateService.changeRate(baseCurrencyCode, targetCurrencyCode, rate);
+        } catch (NullPointerException e) {
+             throw new UncorrectRequestException("Uncorrect request. Request must be \"USDEUR\", for example", e);
+        }
 
-        String baseCurrencyCode = request.substring(0,3);
-        String targetCurrencyCode = request.substring(3,6);
 
-        ExchangeRateDto result = exchangeRateService.changeRate(baseCurrencyCode, targetCurrencyCode, rate);
+
 
         if (result != null){
             resp.setStatus(HttpServletResponse.SC_OK); // 200

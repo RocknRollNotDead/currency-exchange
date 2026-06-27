@@ -28,7 +28,7 @@ public class InitializatorDB {
                         id INTEGER PRIMARY KEY,
                         code VARCHAR(3) NOT NULL UNIQUE CHECK (length(code) = 3 AND code GLOB '[A-Z][A-Z][A-Z]'),
                         full_name VARCHAR(45) NOT NULL,
-                        sign VARCHAR(2) NOT NULL CHECK (length(code) = 3)
+                        sign VARCHAR(2) NOT NULL CHECK (length(sign) = 2)
                     );
                     """);
             // 45 - потому что я так чувствую, что больше не может быть, а меньше может. символа может не быть, yes null

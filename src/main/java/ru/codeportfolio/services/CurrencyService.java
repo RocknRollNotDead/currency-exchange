@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 public class CurrencyService {
 
 
-    private static final Pattern ADMISSION_CODE = Pattern.compile("^[A-Z0-9]{3}$");
+    private static final Pattern ADMISSION_CODE = Pattern.compile("^[A-Z]{3}$");
     private static final int MAX_NAME_LENGTH = 45;
     private static final int SIGN_LENGTH = 2;
 

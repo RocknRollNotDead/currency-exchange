@@ -14,10 +14,11 @@ public class CurrencyExchangeContextListener implements ServletContextListener {
     public void contextInitialized(ServletContextEvent sce) {
         ServletContext context = sce.getServletContext();
 
-        String path = context.getInitParameter("db.path");
+
+        String path = System.getenv("DB_PATH");
 
         if (path == null) {
-            path = System.getenv("DB_PATH");
+            path = context.getInitParameter("db.path");
         }
         if (path == null) {
             throw new IllegalStateException("Не задан context-param db.path или DB_PATH в .env");

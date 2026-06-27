@@ -55,7 +55,7 @@ public class ExchangeRatesDao {
             if (!isCurrencyAlreadyExist(e)){
                 throw new DataAccessException("Failed to add rate", e);
             }
-            throw new AlreadyExistException("Failed to add rate", e);
+            throw new AlreadyExistException("This rate already exist in this table", e);
         }
     }
 

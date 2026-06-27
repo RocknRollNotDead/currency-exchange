@@ -247,7 +247,7 @@ public class ExchangeRateService {
             return new BigDecimal(rate);
 
         } catch (NumberFormatException e){
-            throw new ValidationException("Invalid value: " + e.getMessage(), e);
+            throw new ValidationException("Invalid value ", e);
         } catch (NullPointerException e) {
             throw new ValidationException("must be not empty");
         }
@@ -262,7 +262,7 @@ public class ExchangeRateService {
 
 
     private void checkCodesForEquals(String baseCurrencyCode, String targetCurrencyCode){
-        if(baseCurrencyCode.equals(targetCurrencyCode)){
+        if(baseCurrencyCode.equalsIgnoreCase(targetCurrencyCode)){
             throw new SelfRatingException("Self rating, what else is there to write?");
         }
     }

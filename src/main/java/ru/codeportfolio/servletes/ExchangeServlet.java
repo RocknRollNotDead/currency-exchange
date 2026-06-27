@@ -39,10 +39,13 @@ public class ExchangeServlet extends HttpServlet {
         String baseCurrencyCode = req.getParameter("from");
         String targetCurrencyCode = req.getParameter("to");
         String amountParam = req.getParameter("amount");
-        // todo validate this
 
         BigDecimal value;
-        value = new BigDecimal(amountParam);
+        try {
+            value = new BigDecimal(amountParam);
+        } catch (NumberFormatException | NullPointerException e) {
+            throw new ValidationException("Invalid value: Input must be not empty and contain number", e);
+        }
 
         ExchangeDto result = exchangeRateService.calculateRate(baseCurrencyCode, targetCurrencyCode, value);
 

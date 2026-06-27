@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import ru.codeportfolio.DTO.CurrencyDto;
+import ru.codeportfolio.exceptions.UncorrectRequestException;
 import ru.codeportfolio.services.CurrencyService;
 
 import javax.sql.DataSource;
@@ -30,15 +31,26 @@ public class CurrenciesServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
+        String servletPath = req.getServletPath();
         String path = req.getPathInfo();
 
         String json;
-
-        if (path == null || path.equals("/")){
+        String code;
+        if (servletPath.equals("/currencies")) {
             json = gson.toJson(currencyService.getAllCurrencies());
         } else {
-            String code = path.substring(1);
-            json = gson.toJson(currencyService.getCurrency(code));
+            try{
+                code = path.substring(1);
+            } catch (NullPointerException e){
+                throw new UncorrectRequestException("request must be not null");
+            }
+
+            if (code.length() == 3){
+
+                json = gson.toJson(currencyService.getCurrency(code));
+            } else {
+                throw new UncorrectRequestException("Uncorrect request. Request must have 3 symbols");
+            }
         }
 
         resp.setStatus(HttpServletResponse.SC_OK); // 200
