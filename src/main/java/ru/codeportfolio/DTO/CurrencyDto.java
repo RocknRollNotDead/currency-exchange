@@ -5,12 +5,4 @@ package ru.codeportfolio.DTO;
 
 public record CurrencyDto(int id, String code, String name, String sign) {
 
-    @Override
-    public String toString() {
-        return "Currencies[" +
-                "id=" + id + ", " +
-                "code=" + code + ", " +
-                "name=" + name + ", " +
-                "sign=" + sign + ']';
-    }
 }

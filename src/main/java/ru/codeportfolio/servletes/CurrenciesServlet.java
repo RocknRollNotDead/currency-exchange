@@ -9,18 +9,10 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import ru.codeportfolio.DTO.CurrencyDto;
-import ru.codeportfolio.exceptions.*;
-import ru.codeportfolio.mad.Currency;
 import ru.codeportfolio.services.CurrencyService;
 
 import javax.sql.DataSource;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.Map;
 
 @WebServlet(urlPatterns = {"/currency/*", "/currencies"})
 public class CurrenciesServlet extends HttpServlet {

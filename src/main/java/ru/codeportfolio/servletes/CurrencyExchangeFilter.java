@@ -29,7 +29,7 @@ public class CurrencyExchangeFilter implements Filter {
         } catch (NotFoundException e){
             sendException(resp, e, HttpServletResponse.SC_NOT_FOUND); // 404
 
-        } catch (ValidationException e){
+        } catch (ValidationException | UncorrectRequestException e){
             sendException(resp, e, HttpServletResponse.SC_BAD_REQUEST); // 400
 
         } catch (AlreadyExistException | SelfRatingException e){

@@ -28,6 +28,7 @@ public class ExchangeRatesServlet extends HttpServlet {
     private ExchangeRateService exchangeRateService;
     private DataSource dataSource;
     private final Gson gson = new Gson();
+    private static final String RATE_REQUEST = "rate";
 
     public void init(){
         String path = "C:/Users/artemka/Documents/pet-projects/currency-exchange/database.db"; // пришлось захардкодить, иначе он искал в папке C:\Users\artemka\.SmartTomcat\currency-exchange\currency-exchangedatabase.db
@@ -105,8 +106,13 @@ public class ExchangeRatesServlet extends HttpServlet {
         String path = req.getPathInfo();
         String body = req.getReader().lines().collect(Collectors.joining());
         String[] parts = body.split("=");
+        String rate;
 
-        String rate = parts[1];
+        if (parts[0].equals(RATE_REQUEST)){
+            rate = parts[1];
+        } else {
+            throw new UncorrectRequestException("Expected: \"" + RATE_REQUEST + "\"=\"123\""); // выглядит как "rate"="123"
+        }
 
         String request = path.substring(1);
 
