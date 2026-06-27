@@ -243,11 +243,13 @@ public class ExchangeRateService {
 
     private BigDecimal formatRateFromString(String rate){
         try{
+
             return new BigDecimal(rate);
+
         } catch (NumberFormatException e){
             throw new ValidationException("Invalid value: " + e.getMessage(), e);
         } catch (NullPointerException e) {
-            throw new ValidationException("must be not null");
+            throw new ValidationException("must be not empty");
         }
     }
 
@@ -273,7 +275,7 @@ public class ExchangeRateService {
 
     private void checkCodeOnEmpty(String code){
         if (code == null || code.isBlank()){
-            throw new ValidationException("Code is null or empty");
+            throw new ValidationException("Code is empty");
         }
     }
 

@@ -198,7 +198,7 @@ public class CurrencyService {
 
     private void checkStringOnEmptyAndThrowException(String s, String name){
         if (s == null || s.isBlank()){
-            throw new ValidationException(name + " is null or empty");
+            throw new ValidationException(name + " is empty");
         }
     }
 

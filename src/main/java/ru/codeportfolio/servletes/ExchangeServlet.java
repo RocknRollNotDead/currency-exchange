@@ -21,11 +21,10 @@ import java.util.Map;
 @WebServlet("/exchange")
 public class ExchangeServlet extends HttpServlet {
     private ExchangeRateService exchangeRateService;
-    private DataSource dataSource;
     Gson gson = new Gson();
 
     public void init(){
-        dataSource = (DataSource) getServletContext().getAttribute("dataSource");
+        DataSource dataSource = (DataSource) getServletContext().getAttribute("dataSource");
         exchangeRateService = new ExchangeRateService(dataSource);
     }
 

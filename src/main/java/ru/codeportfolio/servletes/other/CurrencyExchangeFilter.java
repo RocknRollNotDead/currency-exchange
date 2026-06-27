@@ -37,8 +37,7 @@ public class CurrencyExchangeFilter implements Filter {
 
         } catch (DataAccessException  e){
             sendException(resp, e, HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // 500
-        } catch (NumberFormatException e){
-            sendException(resp, e, HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // 500
+
         } catch (Exception e){
             sendException(resp, e, HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // 500
         }

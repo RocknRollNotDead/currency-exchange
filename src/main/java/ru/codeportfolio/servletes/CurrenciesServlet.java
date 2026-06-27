@@ -18,12 +18,11 @@ import java.io.IOException;
 public class CurrenciesServlet extends HttpServlet {
 
     private CurrencyService currencyService;
-    private DataSource dataSource;
     private final Gson gson = new Gson();
 
     public void init(){
 
-        dataSource = (DataSource) getServletContext().getAttribute("dataSource");
+        DataSource dataSource = (DataSource) getServletContext().getAttribute("dataSource");
         currencyService = new CurrencyService(dataSource);
     }
 

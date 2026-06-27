@@ -26,12 +26,12 @@ import java.util.stream.Collectors;
 public class ExchangeRatesServlet extends HttpServlet {
 
     private ExchangeRateService exchangeRateService;
-    private DataSource dataSource;
     private final Gson gson = new Gson();
     private static final String RATE_REQUEST = "rate";
 
     public void init(){
-        dataSource = (DataSource) getServletContext().getAttribute("dataSource");
+        DataSource dataSource = (DataSource) getServletContext().getAttribute("dataSource");
+
         exchangeRateService = new ExchangeRateService(dataSource);
     }
 
@@ -95,10 +95,16 @@ public class ExchangeRatesServlet extends HttpServlet {
         String rate;
 
         if (parts[0].equals(RATE_REQUEST)){
-            rate = parts[1];
+            try{
+                rate = parts[1];
+            } catch (IndexOutOfBoundsException e) {
+                throw new ValidationException("Input must be not empty");
+            }
+
         } else {
             throw new UncorrectRequestException("Expected: \"" + RATE_REQUEST + "\"=\"123\""); // выглядит как "rate"="123"
-        }
+        } // надеюсь в Spring вместо этих 13 строчек есть метод на одну строчку - getParametr("rate") и всё.
+
 
         String request = path.substring(1);
 
