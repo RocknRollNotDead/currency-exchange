@@ -31,23 +31,6 @@ public class ExchangeRatesServlet extends HttpServlet {
     private static final String RATE_REQUEST = "rate";
 
     public void init(){
-        /*String path = getServletContext().getInitParameter("db.path");
-
-        if (path == null) {
-            throw new IllegalStateException("Не задан context-param db.path");
-        }
-
-        HikariConfig config = new HikariConfig();
-        config.setJdbcUrl("jdbc:sqlite:" + path);
-        config.setMaximumPoolSize(10); // сколько соединений держать одновременно
-
-        try {
-            Class.forName("org.sqlite.JDBC");
-            dataSource = new HikariDataSource(config);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }*/
-
         dataSource = (DataSource) getServletContext().getAttribute("dataSource");
         exchangeRateService = new ExchangeRateService(dataSource);
     }
@@ -55,8 +38,6 @@ public class ExchangeRatesServlet extends HttpServlet {
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-
-        // я новичок, поэтому буду обрабатывать exceptions прямо здесь
 
             if ("PATCH".equalsIgnoreCase(req.getMethod())) {
                 doPatch(req, resp);
@@ -132,13 +113,6 @@ public class ExchangeRatesServlet extends HttpServlet {
         String jsonObj = gson.toJson(result);
         resp.getWriter().write(jsonObj);
 
-    }
-
-    @Override
-    public void destroy() {
-        if (dataSource instanceof HikariDataSource hikari) {
-            hikari.close();
-        }
     }
 
 }

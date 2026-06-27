@@ -1,4 +1,4 @@
-package ru.codeportfolio.other;
+package ru.codeportfolio.servletes.other;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -8,7 +8,7 @@ import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
 
 @WebListener
-public class CurrencyExchangeServletContext implements ServletContextListener {
+public class CurrencyExchangeContextListener implements ServletContextListener {
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
@@ -34,15 +34,16 @@ public class CurrencyExchangeServletContext implements ServletContextListener {
         }
 
         HikariDataSource dataSource = new HikariDataSource(config);
-
         context.setAttribute("dataSource", dataSource);
+
+
     }
 
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
         Object dataSource = sce.getServletContext().getAttribute("dataSource");
-        if (dataSource instanceof HikariDataSource hikariDS) {
-            hikariDS.close();
+        if (dataSource instanceof HikariDataSource hikari) {
+            hikari.close();
         }
     }
 }

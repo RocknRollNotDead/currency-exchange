@@ -44,7 +44,7 @@ public class ExchangeRateService {
 
         checkTargetValuesOnCorrectRequest(baseCurrencyCode, targetCurrencyCode);
         BigDecimal rate = validateAndFormatRate(unValidationRate);
-        rate = routingRateToSixSymbolsAfterDot(rate);
+        rate = routingRate(rate, 6);
 
 
         int baseCurrencyId = currencyService.getIdFromCode(baseCurrencyCode);
@@ -121,7 +121,7 @@ public class ExchangeRateService {
 
         BigDecimal rate = validateAndFormatRate(unValidationRate);
         checkTargetValuesOnCorrectRequest(baseCurrencyCode, targetCurrencyCode);
-        rate = routingRateToSixSymbolsAfterDot(rate);
+        rate = routingRate(rate, 6);
 
         int baseCurrencyId = currencyService.getIdFromCode(baseCurrencyCode);
         int targetCurrencyId = currencyService.getIdFromCode(targetCurrencyCode);
@@ -153,7 +153,7 @@ public class ExchangeRateService {
     public ExchangeDto calculateRate (String baseCurrencyCode, String targetCurrencyCode, BigDecimal amount){
 
         checkTargetValuesOnCorrectRequest(baseCurrencyCode, targetCurrencyCode);
-        checkValueOnEmpty(amount);
+        checkValueOnEmptyAndNegative(amount);
 
         CurrencyDto baseCurrency = currencyService.getCurrency(baseCurrencyCode);
         CurrencyDto targetCurrency = currencyService.getCurrency(targetCurrencyCode);
@@ -191,7 +191,7 @@ public class ExchangeRateService {
 
             BigDecimal result = amount.multiply(rate);
 
-            result = routingRateToTwoSymbolsAfterDot(result);
+            result = routingRate(result, 2);
 
             return new ExchangeDto(baseCurrency, targetCurrency, rate, amount, result);
 
@@ -254,7 +254,7 @@ public class ExchangeRateService {
     private BigDecimal validateAndFormatRate(String unValidationRate){
 
         BigDecimal rate = formatRateFromString(unValidationRate);
-        checkValueOnEmpty(rate);
+        checkValueOnEmptyAndNegative(rate);
         return rate;
     }
 
@@ -277,20 +277,18 @@ public class ExchangeRateService {
         }
     }
 
-    private void checkValueOnEmpty(BigDecimal value){
+    private void checkValueOnEmptyAndNegative(BigDecimal value){
         if(value.signum() == 0){
-            throw new ValidationException("Value = 0. Value must be not 0");
+            throw new ValidationException("Value = 0. Value must be > 0");
         }
+        if(value.signum() < 0){
+            throw new ValidationException("Value < 0. Value must be > 0");
+        }
+
     }
 
-    private BigDecimal routingRateToSixSymbolsAfterDot(BigDecimal rate){
-        rate = rate.setScale(6, RoundingMode.HALF_EVEN);
+    private BigDecimal routingRate(BigDecimal rate, int symbolsAfterDot){
+        rate = rate.setScale(symbolsAfterDot, RoundingMode.HALF_EVEN);
         return rate;
     }
-
-    private BigDecimal routingRateToTwoSymbolsAfterDot(BigDecimal rate){
-        rate = rate.setScale(2, RoundingMode.HALF_EVEN);
-        return rate;
-    }
-
 }

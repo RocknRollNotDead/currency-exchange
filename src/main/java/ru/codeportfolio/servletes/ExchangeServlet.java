@@ -25,22 +25,6 @@ public class ExchangeServlet extends HttpServlet {
     Gson gson = new Gson();
 
     public void init(){
-        /*String path = getServletContext().getInitParameter("db.path");
-
-        if (path == null) {
-            throw new IllegalStateException("Не задан context-param db.path");
-        }
-
-        HikariConfig config = new HikariConfig();
-        config.setJdbcUrl("jdbc:sqlite:" + path);
-        config.setMaximumPoolSize(10); // сколько соединений держать одновременно
-
-        try {
-            Class.forName("org.sqlite.JDBC");
-            dataSource = new HikariDataSource(config);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }*/
         dataSource = (DataSource) getServletContext().getAttribute("dataSource");
         exchangeRateService = new ExchangeRateService(dataSource);
     }
@@ -68,15 +52,5 @@ public class ExchangeServlet extends HttpServlet {
         resp.getWriter().write(json);
 
     }
-
-    @Override
-    public void destroy() {
-        if (dataSource instanceof HikariDataSource hikari) {
-            hikari.close();
-        }
-    }
-
-
-
 
 }

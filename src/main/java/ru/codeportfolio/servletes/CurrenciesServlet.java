@@ -23,30 +23,7 @@ public class CurrenciesServlet extends HttpServlet {
 
     public void init(){
 
-        /*
-        String path = getServletContext().getInitParameter("db.path");
-
-        if (path == null) {
-            System.getenv("DB_PATH");
-        }
-        if (path == null) {
-            throw new IllegalStateException("Не задан context-param db.path");
-        }
-
-
-        HikariConfig config = new HikariConfig();
-        config.setJdbcUrl("jdbc:sqlite:" + path);
-        config.setMaximumPoolSize(10); // сколько соединений держать одновременно
-
-        try {
-            Class.forName("org.sqlite.JDBC");
-            dataSource = new HikariDataSource(config);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-*/
         dataSource = (DataSource) getServletContext().getAttribute("dataSource");
-
         currencyService = new CurrencyService(dataSource);
     }
 
@@ -90,11 +67,5 @@ public class CurrenciesServlet extends HttpServlet {
 
     }
 
-    @Override
-    public void destroy() {
-        if (dataSource instanceof HikariDataSource hikari) {
-            hikari.close();
-        }
-    }
 }
 

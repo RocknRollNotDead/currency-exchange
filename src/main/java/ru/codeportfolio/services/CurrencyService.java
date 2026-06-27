@@ -180,14 +180,14 @@ public class CurrencyService {
 
 
     private String normalizeCode(String code){
-        checkStringOnEmptyAndThrowExeption(code, "Code");
+        checkStringOnEmptyAndThrowException(code, "Code");
         return code.toUpperCase();
     }
 
     private void checkValuesOnEmpty(String code, String fullName, String sign){
-        checkStringOnEmptyAndThrowExeption(code, "Code");
-        checkStringOnEmptyAndThrowExeption(fullName, "Full name");
-        checkStringOnEmptyAndThrowExeption(sign, "Sign");
+        checkStringOnEmptyAndThrowException(code, "Code");
+        checkStringOnEmptyAndThrowException(fullName, "Full name");
+        checkStringOnEmptyAndThrowException(sign, "Sign");
     }
 
     private void validateValues(String code, String fullName, String sign){
@@ -196,11 +196,13 @@ public class CurrencyService {
         validateSign(sign);
     }
 
-    private void checkStringOnEmptyAndThrowExeption(String s, String name){
+    private void checkStringOnEmptyAndThrowException(String s, String name){
         if (s == null || s.isBlank()){
             throw new ValidationException(name + " is null or empty");
         }
     }
+
+    // Принципиально не буду делать Validator классы ради 40 строчек. 1. Это задача сервиса. 2. Будет менее читаемо
 
     private void validateCode(String code){
         if (!ADMISSION_CODE.matcher(code).matches()){       //  code.matches("^[A-Z0-9]{3}$")
