@@ -22,7 +22,17 @@ public class CurrenciesServlet extends HttpServlet {
     private final Gson gson = new Gson();
 
     public void init(){
-        String path = "C:/Users/artemka/Documents/pet-projects/currency-exchange/database.db";
+
+        /*
+        String path = getServletContext().getInitParameter("db.path");
+
+        if (path == null) {
+            System.getenv("DB_PATH");
+        }
+        if (path == null) {
+            throw new IllegalStateException("Не задан context-param db.path");
+        }
+
 
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl("jdbc:sqlite:" + path);
@@ -34,6 +44,8 @@ public class CurrenciesServlet extends HttpServlet {
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
+*/
+        dataSource = (DataSource) getServletContext().getAttribute("dataSource");
 
         currencyService = new CurrencyService(dataSource);
     }

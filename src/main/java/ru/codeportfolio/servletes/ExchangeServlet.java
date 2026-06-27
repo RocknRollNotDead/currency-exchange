@@ -25,7 +25,11 @@ public class ExchangeServlet extends HttpServlet {
     Gson gson = new Gson();
 
     public void init(){
-        String path = "C:/Users/artemka/Documents/pet-projects/currency-exchange/database.db"; // пришлось захардкодить, иначе он искал в папке C:\Users\artemka\.SmartTomcat\currency-exchange\currency-exchangedatabase.db
+        /*String path = getServletContext().getInitParameter("db.path");
+
+        if (path == null) {
+            throw new IllegalStateException("Не задан context-param db.path");
+        }
 
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl("jdbc:sqlite:" + path);
@@ -36,8 +40,8 @@ public class ExchangeServlet extends HttpServlet {
             dataSource = new HikariDataSource(config);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
-        }
-
+        }*/
+        dataSource = (DataSource) getServletContext().getAttribute("dataSource");
         exchangeRateService = new ExchangeRateService(dataSource);
     }
 

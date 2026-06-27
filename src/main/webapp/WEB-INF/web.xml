@@ -6,4 +6,8 @@
          version="6.0"
          metadata-complete="false">
 
+    <context-param>
+        <param-name>db.path</param-name>
+        <param-value>C:/Users/artemka/Documents/pet-projects/currency-exchange/database.db</param-value>
+    </context-param>
 </web-app>
