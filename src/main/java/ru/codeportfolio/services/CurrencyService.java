@@ -5,7 +5,7 @@ import ru.codeportfolio.db.CurrenciesDao;
 import ru.codeportfolio.exceptions.DataAccessException;
 import ru.codeportfolio.exceptions.NotFoundException;
 import ru.codeportfolio.exceptions.ValidationException;
-import ru.codeportfolio.mad.Currency;
+import ru.codeportfolio.models.Currency;
 import ru.codeportfolio.mapper.CurrencyMapper;
 
 import javax.sql.DataSource;

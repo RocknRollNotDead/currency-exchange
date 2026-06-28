@@ -6,7 +6,7 @@ import ru.codeportfolio.db.ExchangeRatesDao;
 import ru.codeportfolio.exceptions.*;
 
 import ru.codeportfolio.DTO.ExchangeDto;
-import ru.codeportfolio.mad.ExchangeRate;
+import ru.codeportfolio.models.ExchangeRate;
 import ru.codeportfolio.mapper.ExchangeRateMapper;
 
 import javax.sql.DataSource;
@@ -179,7 +179,7 @@ public class ExchangeRateService {
                 exchangeRate = exchangeRatesDao.findByBaseAndTargetId(targetCurrencyId, baseCurrencyId);
 
                 if (exchangeRate != null) {
-                    rate = calculateReverseRate(exchangeRate.rate());
+                    rate = calculateReverseDecimal(exchangeRate.rate());
                 } else {
                     rate = calculateRateFromUsd(exchangeRatesDao, baseCurrencyId, targetCurrencyId);
                 }
@@ -194,6 +194,7 @@ public class ExchangeRateService {
             result = routingRate(result, 2);
 
             return new ExchangeDto(baseCurrency, targetCurrency, rate, amount, result);
+
 
         } catch (SQLException e) {
             throw new DataAccessException("DB error", e);
@@ -212,7 +213,7 @@ public class ExchangeRateService {
 
         ExchangeRate secondRate = exchangeRatesDao.findByBaseAndTargetId(mainCurrencyId, baseCurrencyId);
         if (secondRate != null){
-            return calculateReverseRate(secondRate.rate());
+            return calculateReverseDecimal(secondRate.rate());
         }
 
         throw new NotFoundException("Rate " + baseCurrencyId + "-USD not found!");
@@ -220,13 +221,13 @@ public class ExchangeRateService {
     }
 
     private BigDecimal calculateRateFromUsd(ExchangeRatesDao exchangeRatesDao,
-                                            int baseCurrencyId, int targetCurrencyId){
+                                            int currencyId, int targetCurrencyId){
         int mainCurrencyId = currencyService.getIdFromCode(MAIN_CURRENCY_CODE);
 
         BigDecimal USDRateBase;
         BigDecimal USDRateTarget;
 
-        USDRateBase = getUsdRate(exchangeRatesDao, baseCurrencyId, mainCurrencyId);
+        USDRateBase = getUsdRate(exchangeRatesDao, currencyId, mainCurrencyId);
 
         USDRateTarget = getUsdRate(exchangeRatesDao, targetCurrencyId, mainCurrencyId);
 
@@ -234,7 +235,7 @@ public class ExchangeRateService {
                 6, RoundingMode.HALF_EVEN);
     }
 
-    private BigDecimal calculateReverseRate(BigDecimal value){
+    private BigDecimal calculateReverseDecimal(BigDecimal value){
         return BigDecimal.ONE.divide(
                 value,
                 6, RoundingMode.HALF_EVEN);

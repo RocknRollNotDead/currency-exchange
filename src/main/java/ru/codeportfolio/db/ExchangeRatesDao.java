@@ -2,8 +2,8 @@ package ru.codeportfolio.db;
 
 import ru.codeportfolio.exceptions.AlreadyExistException;
 import ru.codeportfolio.exceptions.DataAccessException;
-import ru.codeportfolio.mad.Currency;
-import ru.codeportfolio.mad.ExchangeRate;
+import ru.codeportfolio.models.Currency;
+import ru.codeportfolio.models.ExchangeRate;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -16,11 +16,9 @@ import java.util.List;
 public class ExchangeRatesDao {
 
     private final Connection conn;
-    private final CurrenciesDao currenciesDao;
 
     public ExchangeRatesDao(Connection conn) {
         this.conn = conn;
-        currenciesDao = new CurrenciesDao(conn);
 
     }
 

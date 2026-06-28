@@ -40,10 +40,13 @@ public class CurrencyExchangeFilter implements Filter {
             sendException(resp, e, HttpServletResponse.SC_CONFLICT); // 409
 
         } catch (DataAccessException e){
-            sendException(resp, e, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            System.err.println(e);
+            Exception myException = new Exception("Database error", e);
+            sendException(resp, myException, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         } catch (Exception e){
             System.err.println(e);
-            sendException(resp, e, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            Exception myException = new Exception("Server error", e);
+            sendException(resp, myException, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
 
 

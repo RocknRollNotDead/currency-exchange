@@ -1,4 +1,4 @@
-package ru.codeportfolio.mad;
+package ru.codeportfolio.models;
 
 import java.math.BigDecimal;
 

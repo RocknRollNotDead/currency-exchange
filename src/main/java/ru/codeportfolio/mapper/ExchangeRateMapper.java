@@ -1,12 +1,9 @@
 package ru.codeportfolio.mapper;
 
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
-import ru.codeportfolio.DTO.CurrencyDto;
 import ru.codeportfolio.DTO.ExchangeRateDto;
-import ru.codeportfolio.mad.Currency;
-import ru.codeportfolio.mad.ExchangeRate;
+import ru.codeportfolio.models.ExchangeRate;
 
 import java.util.List;
 

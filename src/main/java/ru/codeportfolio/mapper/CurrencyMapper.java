@@ -3,7 +3,7 @@ package ru.codeportfolio.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 import ru.codeportfolio.DTO.CurrencyDto;
-import ru.codeportfolio.mad.Currency;
+import ru.codeportfolio.models.Currency;
 
 import java.util.List;
 

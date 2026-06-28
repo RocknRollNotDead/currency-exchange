@@ -1,8 +1,6 @@
 package ru.codeportfolio.servletes;
 
 import com.google.gson.Gson;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -10,14 +8,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import ru.codeportfolio.DTO.ExchangeRateDto;
 import ru.codeportfolio.exceptions.*;
-import ru.codeportfolio.mad.ExchangeRate;
 import ru.codeportfolio.services.ExchangeRateService;
 
 import javax.sql.DataSource;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.math.BigDecimal;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 // при add отдавать обьект кого добавили

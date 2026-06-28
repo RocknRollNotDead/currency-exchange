@@ -3,7 +3,7 @@ package ru.codeportfolio.db;
 
 import ru.codeportfolio.exceptions.AlreadyExistException;
 import ru.codeportfolio.exceptions.DataAccessException;
-import ru.codeportfolio.mad.Currency;
+import ru.codeportfolio.models.Currency;
 
 import java.sql.*;
 import java.util.ArrayList;

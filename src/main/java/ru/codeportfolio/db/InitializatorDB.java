@@ -24,7 +24,7 @@ public class InitializatorDB {
                         sign VARCHAR(2) NOT NULL CHECK (length(sign) <= 2)
                     );
                     """);
-            // символа может не быть, yes null
+
             stmt.execute("""
                     CREATE TABLE IF NOT EXISTS exchange_rates (
                         id INTEGER PRIMARY KEY,
