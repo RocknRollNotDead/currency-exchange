@@ -11,27 +11,20 @@ public class InitializatorDB {
         try (Connection conn = DriverManager.getConnection(url);
              Statement stmt = conn.createStatement()) {
 
-
-
-            stmt.execute("DROP TABLE users");
-            stmt.execute("DROP TABLE currencies");
-            stmt.execute("DROP TABLE exchange_rates");
+//            stmt.execute("DROP TABLE IF EXISTS currencies");
+//            stmt.execute("DROP TABLE IF EXISTS exchange_rates");
 
             stmt.execute("PRAGMA foreign_keys = ON;");
-
-//            stmt.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT, email TEXT);");
-//            stmt.execute("INSERT INTO users(name, email) VALUES ('Alice', 'mail example');");
-
 
             stmt.execute("""
                     CREATE TABLE IF NOT EXISTS currencies (
                         id INTEGER PRIMARY KEY,
                         code VARCHAR(3) NOT NULL UNIQUE CHECK (length(code) = 3 AND code GLOB '[A-Z][A-Z][A-Z]'),
                         full_name VARCHAR(45) NOT NULL,
-                        sign VARCHAR(2) NOT NULL CHECK (length(sign) = 2)
+                        sign VARCHAR(2) NOT NULL CHECK (length(sign) <= 2)
                     );
                     """);
-            // 45 - потому что я так чувствую, что больше не может быть, а меньше может. символа может не быть, yes null
+            // символа может не быть, yes null
             stmt.execute("""
                     CREATE TABLE IF NOT EXISTS exchange_rates (
                         id INTEGER PRIMARY KEY,
@@ -46,11 +39,7 @@ public class InitializatorDB {
 
             System.out.println("База работает");
 
-
-//            Class.forName("org.sqlite.JDBC");
-//            conn = DriverManager.getConnection(url);
         } catch (Exception e) {
-            //todo обработать все ошибки создания
             e.printStackTrace();
         }
     }

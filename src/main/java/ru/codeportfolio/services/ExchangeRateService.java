@@ -202,35 +202,34 @@ public class ExchangeRateService {
     }
 
 
+    private BigDecimal getUsdRate(ExchangeRatesDao exchangeRatesDao,
+                                  int baseCurrencyId, int mainCurrencyId){
+        BigDecimal result;
+        ExchangeRate firstRate = exchangeRatesDao.findByBaseAndTargetId(baseCurrencyId, mainCurrencyId);
+        if (firstRate != null){
+            return firstRate.rate();
+        }
+
+        ExchangeRate secondRate = exchangeRatesDao.findByBaseAndTargetId(mainCurrencyId, baseCurrencyId);
+        if (secondRate != null){
+            return calculateReverseRate(secondRate.rate());
+        }
+
+        throw new NotFoundException("Rate " + baseCurrencyId + "-USD not found!");
+
+    }
 
     private BigDecimal calculateRateFromUsd(ExchangeRatesDao exchangeRatesDao,
                                             int baseCurrencyId, int targetCurrencyId){
-        int mainCurrency = currencyService.getIdFromCode(MAIN_CURRENCY_CODE);
+        int mainCurrencyId = currencyService.getIdFromCode(MAIN_CURRENCY_CODE);
 
         BigDecimal USDRateBase;
         BigDecimal USDRateTarget;
 
-        try {
-            USDRateBase = exchangeRatesDao.findByBaseAndTargetId(baseCurrencyId, mainCurrency).rate();
-        } catch (DataAccessException | NullPointerException e) {
-            try {
-                USDRateBase = calculateReverseRate(
-                        exchangeRatesDao.findByBaseAndTargetId(mainCurrency, baseCurrencyId).rate());
-            } catch (DataAccessException  | NullPointerException ee){
-                throw new NotFoundException("Rate Base-USD not found!");
-            }
-        }
+        USDRateBase = getUsdRate(exchangeRatesDao, baseCurrencyId, mainCurrencyId);
 
-        try {
-            USDRateTarget = exchangeRatesDao.findByBaseAndTargetId(targetCurrencyId, mainCurrency).rate();
-        } catch (DataAccessException | NullPointerException e) {
-            try {
-                USDRateTarget = calculateReverseRate(
-                        exchangeRatesDao.findByBaseAndTargetId(mainCurrency, targetCurrencyId).rate());
-            } catch (DataAccessException | NullPointerException ee){
-                throw new NotFoundException("Rate Target-USD not found!");
-            }
-        }
+        USDRateTarget = getUsdRate(exchangeRatesDao, targetCurrencyId, mainCurrencyId);
+
         return USDRateBase.divide(USDRateTarget,
                 6, RoundingMode.HALF_EVEN);
     }

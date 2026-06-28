@@ -88,7 +88,6 @@ public class ExchangeRatesServlet extends HttpServlet {
         String rate = req.getParameter("rate");
 
         ExchangeRateDto result = exchangeRateService.addRate(baseCurrencyCode, targetCurrencyCode, rate);
-
         if (result != null){
             resp.setStatus(HttpServletResponse.SC_CREATED); // 201
         }

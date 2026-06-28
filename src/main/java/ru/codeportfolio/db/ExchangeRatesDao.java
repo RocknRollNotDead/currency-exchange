@@ -23,17 +23,49 @@ public class ExchangeRatesDao {
         currenciesDao = new CurrenciesDao(conn);
 
     }
+/*
+* SELECT er.id as er_id, bc.id as bc_id, bc.code as bc_code, bc.full_name as bc_name, bc.sign as bc_sign,
+                tc.id AS tc_id, tc.code as tc_code, tc.full_name as tc_name, tc.sign as tc_sign, er.rate
+        FROM exchange_rates er
+        JOIN currencies as bc ON bc.id = er.base_currency_id
+        JOIN currencies as tc ON tc.id = er.target_currency_id
 
+* */
     public List<ExchangeRate> getAllExchangeRates() {
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "SELECT * FROM exchange_rates")){
+        String sql = """
+        
+        SELECT er.id as er_id, er.rate,
+                               bc.id as bc_id, bc.code as bc_code, bc.full_name as bc_name, bc.sign as bc_sign,
+                               tc.id as tc_id, tc.code as tc_code, tc.full_name as tc_name, tc.sign as tc_sign
+        FROM exchange_rates er
+        JOIN currencies bc ON er.base_currency_id = bc.id
+        JOIN currencies tc ON er.target_currency_id = tc.id
+        """;
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)){
             List<ExchangeRate> exchangeRates = new ArrayList<>();
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                ExchangeRate exchangeRate = new ExchangeRate(rs.getInt("id"),
-                        currenciesDao.findById(rs.getInt("base_currency_id")),
-                        currenciesDao.findById(rs.getInt("target_currency_id")),
-                        rs.getBigDecimal("rate") );
+                Currency baseCurrency = new Currency(
+                        rs.getInt("bc_id"),
+                        rs.getString("bc_code"),
+                        rs.getString("bc_name"),
+                        rs.getString("bc_sign")
+                );
+
+                Currency targetCurrency = new Currency(
+                        rs.getInt("tc_id"),
+                        rs.getString("tc_code"),
+                        rs.getString("tc_name"),
+                        rs.getString("tc_sign")
+                );
+
+                ExchangeRate exchangeRate = new ExchangeRate(
+                        rs.getInt("er_id"),
+                        baseCurrency,
+                        targetCurrency,
+                        rs.getBigDecimal("rate")
+                );
                 exchangeRates.add(exchangeRate);
             }
             return exchangeRates;

@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
 
-@WebFilter ("/*")
+@WebFilter (urlPatterns = {"/currency/*", "/currencies", "/exchangeRate/*", "/exchangeRates", "/exchange"})
 public class CurrencyExchangeFilter implements Filter {
 
 
@@ -39,10 +39,15 @@ public class CurrencyExchangeFilter implements Filter {
         } catch (AlreadyExistException | SelfRatingException e){
             sendException(resp, e, HttpServletResponse.SC_CONFLICT); // 409
 
+        } catch (DataAccessException e){
+            sendException(resp, e, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         } catch (Exception e){
-            log.error("e: ", e);
-            throw new RuntimeException(e);
+            System.err.println(e);
+            sendException(resp, e, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
+
+
+
 
 
     }
