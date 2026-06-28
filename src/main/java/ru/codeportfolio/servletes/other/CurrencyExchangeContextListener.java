@@ -6,6 +6,7 @@ import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
+import ru.codeportfolio.db.InitializatorDB;
 
 @WebListener
 public class CurrencyExchangeContextListener implements ServletContextListener {
@@ -36,6 +37,7 @@ public class CurrencyExchangeContextListener implements ServletContextListener {
         }
 
         HikariDataSource dataSource = new HikariDataSource(config);
+        InitializatorDB.execute(dataSource);
         context.setAttribute("dataSource", dataSource);
 
 

@@ -43,6 +43,7 @@ public class ExchangeRateService {
     public ExchangeRateDto addRate(String baseCurrencyCode, String targetCurrencyCode, String unValidationRate) {
 
         checkTargetValuesOnCorrectRequest(baseCurrencyCode, targetCurrencyCode);
+
         BigDecimal rate = validateAndFormatRate(unValidationRate);
         rate = routingRate(rate, 6);
 
@@ -119,8 +120,9 @@ public class ExchangeRateService {
 
     public ExchangeRateDto changeRate(String baseCurrencyCode, String targetCurrencyCode, String unValidationRate){
 
-        BigDecimal rate = validateAndFormatRate(unValidationRate);
         checkTargetValuesOnCorrectRequest(baseCurrencyCode, targetCurrencyCode);
+
+        BigDecimal rate = validateAndFormatRate(unValidationRate);
         rate = routingRate(rate, 6);
 
         int baseCurrencyId = currencyService.getIdFromCode(baseCurrencyCode);

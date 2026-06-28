@@ -77,6 +77,10 @@ public class ExchangeRatesServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
+        // POST запрос на rateS для одной валюты это не очень логично. Поэтому пускай на обоих путях будет такое.
+        // я, как юзер, не ожидаю, что надо передавать POST запрос одного курса на курсЫ
+        // поэтому должна быть возможность послать пост запрос с ОДНИМ курсом на path КУРС, а не курсЫ
+
         String baseCurrencyCode = req.getParameter("baseCurrencyCode");
         String targetCurrencyCode  = req.getParameter("targetCurrencyCode");
         String rate = req.getParameter("rate");

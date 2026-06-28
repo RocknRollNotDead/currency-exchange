@@ -1,26 +1,19 @@
 package ru.codeportfolio.db;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 public class InitializatorDB {
-    public static void execute(){
+    public static void execute(DataSource dataSource) {
 
-        String path = System.getenv("DB_PATH");
-
-        if (path == null) {
-            path = "C:/Users/artemka/Documents/pet-projects/currency-exchange/database.db";
-        }
-
-        String url = "jdbc:sqlite:" + path;
-        try (Connection conn = DriverManager.getConnection(url);
+        try (Connection conn = dataSource.getConnection();
              Statement stmt = conn.createStatement()) {
 
 //            stmt.execute("DROP TABLE IF EXISTS currencies");
 //            stmt.execute("DROP TABLE IF EXISTS exchange_rates");
-
-            stmt.execute("PRAGMA foreign_keys = ON;");
 
             stmt.execute("""
                     CREATE TABLE IF NOT EXISTS currencies (
