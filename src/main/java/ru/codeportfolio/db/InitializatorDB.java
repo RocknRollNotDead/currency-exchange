@@ -7,7 +7,13 @@ import java.sql.Statement;
 public class InitializatorDB {
     public static void execute(){
 
-        String url = "jdbc:sqlite:C:/Users/artemka/Documents/pet-projects/currency-exchange/database.db";
+        String path = System.getenv("DB_PATH");
+
+        if (path == null) {
+            path = "C:/Users/artemka/Documents/pet-projects/currency-exchange/database.db";
+        }
+
+        String url = "jdbc:sqlite:" + path;
         try (Connection conn = DriverManager.getConnection(url);
              Statement stmt = conn.createStatement()) {
 
