@@ -23,14 +23,7 @@ public class ExchangeRatesDao {
         currenciesDao = new CurrenciesDao(conn);
 
     }
-/*
-* SELECT er.id as er_id, bc.id as bc_id, bc.code as bc_code, bc.full_name as bc_name, bc.sign as bc_sign,
-                tc.id AS tc_id, tc.code as tc_code, tc.full_name as tc_name, tc.sign as tc_sign, er.rate
-        FROM exchange_rates er
-        JOIN currencies as bc ON bc.id = er.base_currency_id
-        JOIN currencies as tc ON tc.id = er.target_currency_id
 
-* */
     public List<ExchangeRate> getAllExchangeRates() {
         String sql = """
         
@@ -118,7 +111,6 @@ public class ExchangeRatesDao {
 
     public ExchangeRate findByBaseAndTargetId(int baseCurrencyId, int targetCurrencyId){
 
-        // потренировался писать такие запросы, но пока что это ни в getAll, ни тем более здесь нафиг не надо
 
         String sql = """
         SELECT er.id, bc.id as bc_id, bc.code as bc_code, bc.full_name as bc_name, bc.sign as bc_sign,

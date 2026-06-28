@@ -18,7 +18,7 @@ public class CurrenciesDao {
 
     public List<Currency> getAllCurrencies() {
         try (PreparedStatement stmt = conn.prepareStatement(
-                "SELECT * FROM currencies")){
+                "SELECT id, code, full_name, sign FROM currencies")){
             List<Currency> currencies = new ArrayList<>();
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
@@ -55,7 +55,7 @@ public class CurrenciesDao {
     public Currency findByCode(String code){
 
         try (PreparedStatement stmt = conn.prepareStatement(
-                    "SELECT * FROM currencies WHERE code = ?"
+                    "SELECT id, code, full_name, sign FROM currencies WHERE code = ?"
             )){
             stmt.setString(1, code);
             ResultSet rs = stmt.executeQuery();
@@ -76,7 +76,7 @@ public class CurrenciesDao {
     public Currency findById(int id) {
 
         try (PreparedStatement stmt = conn.prepareStatement(
-                    "SELECT * FROM currencies WHERE id = ?"
+                    "SELECT id, code, full_name, sign FROM currencies WHERE id = ?"
             )){
             stmt.setInt(1, id);
             ResultSet rs = stmt.executeQuery();

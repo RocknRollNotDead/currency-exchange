@@ -27,6 +27,7 @@ public class CurrencyExchangeContextListener implements ServletContextListener {
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl("jdbc:sqlite:" + path);
         config.setMaximumPoolSize(10);
+        config.setConnectionInitSql("PRAGMA foreign_keys = ON;");
 
         try {
             Class.forName("org.sqlite.JDBC");
