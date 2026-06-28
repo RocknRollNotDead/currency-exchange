@@ -186,7 +186,7 @@ public class CurrencyService {
 
     private void checkValuesOnEmpty(String code, String fullName, String sign){
         checkStringOnEmptyAndThrowException(code, "Code");
-        checkStringOnEmptyAndThrowException(fullName, "Full name");
+        checkStringOnEmptyAndThrowException(fullName, "Full fullName");
         checkStringOnEmptyAndThrowException(sign, "Sign");
     }
 
@@ -211,7 +211,7 @@ public class CurrencyService {
     }
     private void validateName(String fullName){
         if (fullName.length() > MAX_NAME_LENGTH){
-            throw new ValidationException("Full name is many " + MAX_NAME_LENGTH);
+            throw new ValidationException("Full fullName is many " + MAX_NAME_LENGTH);
         }
     }
     private void validateSign(String sign){
