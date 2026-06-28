@@ -1,4 +1,4 @@
-package ru.codeportfolio.servletes.other;
+package ru.codeportfolio.servlets.other;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;

@@ -1,4 +1,4 @@
-package ru.codeportfolio.servletes.other;
+package ru.codeportfolio.servlets.other;
 
 import com.google.gson.Gson;
 import jakarta.servlet.*;

@@ -1,8 +1,6 @@
-package ru.codeportfolio.servletes;
+package ru.codeportfolio.servlets;
 
 import com.google.gson.Gson;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -14,9 +12,7 @@ import ru.codeportfolio.services.ExchangeRateService;
 
 import javax.sql.DataSource;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.math.BigDecimal;
-import java.util.Map;
 
 @WebServlet("/exchange")
 public class ExchangeServlet extends HttpServlet {

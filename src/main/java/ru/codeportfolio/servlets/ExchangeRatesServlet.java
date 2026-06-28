@@ -1,4 +1,4 @@
-package ru.codeportfolio.servletes;
+package ru.codeportfolio.servlets;
 
 import com.google.gson.Gson;
 import jakarta.servlet.ServletException;

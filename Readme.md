@@ -16,6 +16,10 @@ Servlet → Service → DAO, с отдельными слоями моделей
 
 **Frontend** — взят из репозитория [zhukovsd/currency-exchange-frontend](https://github.com/zhukovsd/currency-exchange-frontend), автор не я, использую как готовый клиент к своему API.
 
+7 явных пакетов - db, DTO, exceptions, mapper, models, services, servlets. Без всякого мусора по типу validators.
+Сразу понятна ориентация в коде, можно быстро найти то, что надо и посмотреть как это реализовано. Мне кажется, что больше 10 пакетов - перебор. Человеку сложно ориентироваться в таком количестве пакетов. Это неудобно.
+
+
 ## Функциональность
 
 - CRUD по справочнику валют (`/currencies`, `/currency/{code}`)

@@ -1,8 +1,6 @@
-package ru.codeportfolio.servletes;
+package ru.codeportfolio.servlets;
 
 import com.google.gson.Gson;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
