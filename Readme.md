@@ -22,8 +22,8 @@ Servlet → Service → DAO, с отдельными слоями моделей
 
 ## Функциональность
 
-- CRUD по справочнику валют (`/currencies`, `/currency/{code}`)
-- CRUD по курсам обмена (`/exchangeRates`, `/exchangeRate/{codePair}`)
+- CRUD без Update Delete по справочнику валют (`/currencies`, `/currency/{code}`)
+- CRUD без Delete по курсам обмена (`/exchangeRates`, `/exchangeRate/{codePair}`)
 - Расчёт обмена между двумя валютами (`/exchange?from=...&to=...&amount=...`) с тремя сценариями расчёта курса: прямой курс, обратный курс, расчёт через курс к USD
 - Единая обработка ошибок через `Filter` → понятные JSON-ответы с корректными HTTP-статусами (400/404/409/500)
 
