@@ -27,63 +27,135 @@ Servlet → Service → DAO, с отдельными слоями моделей
 - Расчёт обмена между двумя валютами (`/exchange?from=...&to=...&amount=...`) с тремя сценариями расчёта курса: прямой курс, обратный курс, расчёт через курс к USD
 - Единая обработка ошибок через `Filter` → понятные JSON-ответы с корректными HTTP-статусами (400/404/409/500)
 
-## Как запустить
+## Как запускал
 
-### 1. Подготовка
+### 1. Заход в Ubuntu
 
-- JDK 17+
-- Maven
-- Apache Tomcat 10+ (нужна поддержка Jakarta Servlet API, на Tomcat 9 и ниже проект не соберётся/не запустится)
+- Арендовал vps сервер с Ubuntu (самый дешёвый) на одном из российских провайдеров - Beget Cloud, Timeweb Cloud, Selectel и др. 
+- Получил данные для входа в виде ssh login@000.000.000.000 и password, где вместо login - выданный логин, вместо 0.0.0.0 выданный ip адрес, а вместо password - выданный пароль
+- Открыл командную строку БЕЗ имени администратора и ввёл 'ssh login@000.000.000.000' * Enter * и потом password: 'mypassword'
 
-### 2. Клонировать репозиторий
+### 2. Настройка Java и Tomcat Manager
 
+**2.1. Установил JDK**
 ```bash
-git clone https://github.com/RocknRollNotDead/currency-exchange.git
-cd currency-exchange
+apt update && apt upgrade -y
+apt install -y openjdk-21-jre-headless
 ```
 
-### 3. Указать путь к файлу базы данных
+**2.2. Установил Tomcat**
 
-Приложение само создаёт схему (`currencies`, `exchange_rates`) при первом старте, если файла БД ещё нет — отдельно накатывать миграции не нужно. Нужно только указать, где именно SQLite-файл должен лежать. Любым из двух способов:
-
-**Через переменную окружения** (приоритетный способ, удобен для хостинга/CI):
+В `apt` уже есть Tomcat 9, а нужен Tomcat 10. Проверил версию на https://tomcat.apache.org/download-10.cgi и задал такие команды на установку Tomcat: (на 29.06.2026 самая новая версия - 10.1.56)
 
 ```bash
-export DB_PATH=/absolute/path/to/database.db
+cd /opt
+wget https://dlcdn.apache.org/tomcat/tomcat-10/v10.1.56/bin/apache-tomcat-10.1.56.tar.gz
+tar -xzf apache-tomcat-10.1.56.tar.gz
+mv apache-tomcat-10.1.56 tomcat
 ```
 
-**Или через `context-param` в `src/main/webapp/WEB-INF/web.xml`**, если переменная окружения не задана:
+**2.3. Создал пользователя Tomcat**
 
+```bash
+useradd -m -d /opt/tomcat -U -s /bin/false tomcat
+chown -R tomcat:tomcat /opt/tomcat
+```
+
+**2.4. Директория**
+
+Создал директорию, куда мой проект создаст файл database.db
+
+```bash
+mkdir -p /var/lib/currency-exchange
+chown tomcat:tomcat /var/lib/currency-exchange
+```
+
+**2.5. Добавил админа для Tomcat Manager**
+
+Чтобы не загружать файлы через Linux и командную строку, можно воспользоваться веб интерфейсом Tomcat, для возможности этого нужно создать пользователя, набрав `/opt/tomcat/conf/tomcat-users.xml` (этим открывается файл):
+
+В нём вместо этого:
 ```xml
-<context-param>
-    <param-name>db.path</param-name>
-    <param-value>/absolute/path/to/database.db</param-value>
-</context-param>
+....
+</tomcat users>
 ```
 
-### 4. Собрать `.war`
+Делаем это
+```xml
+....
+<role rolename="manager-gui"/>
+<user username="admin" password="mypassword" roles="manager-gui"/>
+</tomcat users>
+```
+(вместо mypassword вставляем свой придуманный пароль)
+
+> В Tomcat в `webapps/manager/META-INF/context.xml` может быть открыто (не закомментировано) значение `RemoteAddrValve`/`RemoteCIDRValve` которое ограничивает доступ к Manager, и его можно открыть только в убунту по адресу `localhost`, я проверил и закомментировал, если он был не закомментирован.
+
+**2.6. Задал путь к базе данных через env**
 
 ```bash
-mvn clean package
+cat > /opt/tomcat/bin/setenv.sh << 'EOF'
+export DB_PATH=/var/lib/currency-exchange/database.db
+EOF
+chmod +x /opt/tomcat/bin/setenv.sh
+chown -R tomcat:tomcat /opt/tomcat
 ```
 
-Артефакт появится в `target/currency-exchange.war`.
+`setenv.sh` ставит переменные окружения в Tomcat
 
-### 5. Задеплоить в Tomcat
-
-Скопировать `.war` в `webapps/` вашего Tomcat (или задеплоить через панель управления хостинга, если она поддерживает загрузку `.war`):
+**2.7. Открыл порт 8080**
 
 ```bash
-cp target/currency-exchange.war $TOMCAT_HOME/webapps/
+ufw allow 8080/tcp
 ```
 
-Tomcat развернёт его автоматически. Приложение будет доступно по адресу `http://<host>:<port>/currency-exchange/`.
+**2.8. Запустить Tomcat от пользователя tomcat**
 
-### Локальный запуск через IntelliJ IDEA
+```bash
+su -s /bin/bash tomcat -c /opt/tomcat/bin/startup.sh
+```
 
-В репозитории есть конфигурация плагина SmartTomcat (`.smarttomcat/`) — если в IDEA установлен этот плагин, можно запускать проект прямо из IDE без отдельной сборки `.war`, предварительно задав `DB_PATH` в конфигурации запуска.
+В конце присланного сообщения увидел `Tomcat started.`
+Но на всякий случай лучше проверить:
+```bash
+ps aux | grep tomcat              # процесс запущен
+ss -tlnp | grep 8080               # порт слушается
+```
+
+### 3. Загрузка `.war` в Manager
+
+По ссылке `http://000.000.000.000:8080/manager/html` открывается Manager Tomcat, и вводим логин и пароль из `<user username="admin" password="mypassword" roles="manager-gui"/>` (из того файла `/opt/tomcat/conf/tomcat-users.xml`).
+
+
+Нашёл раздел **"WAR file to deploy"** и кнопку "Выбрать файл".
+После этого в app.js поменял ссылку
+```javascript
+const host = "http://localhost:8080/rates"
+ ```
+на
+```javascript
+`"http://000.000.000.000:8080/currency-exchange"
+```
+и после этого собрал .war - `mvn clean package` в IntelliJ IDEA
+
+выбрать собранный `.war` из папки target, переименовал из currency-exchange-1.0-SNAPSHOT в currency-exchange для нормального названия в строке браузера → нажал **"Развернуть"**.
+
+После этого приложение должно появиться в списке в начале страницы со статусом `running` (`true`), а также развернуться по адресу:
+```
+http://000.000.000.000:8080/currency-exchange/
+```
+
+**3.1. Поправить адрес бэкенда в app.js**
+
+Если открылось, но в F12 на вкладке Network ошибка ERR_CONNECTION_REFUSED, значит что-то не так со ссылкой `const host = "http://localhost:8080/rates"`
+
+Чтобы обновить её на рабочую ссылку прямо на сервере, нужно открыть файл прямо в командной строке:
+```bash
+/opt/tomcat/webapps/currency-exchange/js/app.js
+```
+и попровить вручную на `const host = "http://000.000.000.000:8080/currency-exchange"`.
 
 ## О коммитах
 
-Если зайдёте в историю коммитов — там используется особый паттерн [«garbage](https://habr.com/ru/companies/softonit/articles/892386/)[ dump»](https://matklad.github.io/2021/05/12/design-pattern-dumping-ground.html). Мой пет-проект стал лучше благодаря этому прекрасному паттерну. С этим паттерном мои навыки в гит значительно увеличились.
+Если зайти в историю коммитов — там используется особый паттерн [«garbage](https://habr.com/ru/companies/softonit/articles/892386/)[ dump»](https://matklad.github.io/2021/05/12/design-pattern-dumping-ground.html). Мой пет-проект стал лучше благодаря этому прекрасному паттерну. С этим паттерном мои навыки в гит значительно увеличились.
 
