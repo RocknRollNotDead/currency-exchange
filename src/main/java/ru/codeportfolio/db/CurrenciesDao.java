@@ -10,13 +10,14 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CurrenciesDao {
+public class CurrenciesDao implements CurrenciesDaoInterface {
     private final Connection conn;
 
     public CurrenciesDao(Connection conn) {
         this.conn = conn;
     }
 
+    @Override
     public List<Currency> getAllCurrencies() {
         try (PreparedStatement stmt = conn.prepareStatement(
                 "SELECT id, code, full_name, sign FROM currencies")){
@@ -35,6 +36,7 @@ public class CurrenciesDao {
         }
     }
 
+    @Override
     public int addCurrency(String code, String fullName, String sign) {
         try (PreparedStatement stmt = conn.prepareStatement(
                 "INSERT INTO currencies(code, full_name, sign) VALUES (?, ?, ?);"
@@ -53,6 +55,7 @@ public class CurrenciesDao {
         }
     }
 
+    @Override
     public Currency findByCode(String code){
 
         try (PreparedStatement stmt = conn.prepareStatement(
@@ -95,6 +98,7 @@ public class CurrenciesDao {
         }
     }
 
+    @Override
     public int updateCurrency(String code, String fullName, String sign) {
         try (PreparedStatement stmt = conn.prepareStatement(
                 "UPDATE currencies SET full_name = ?, sign = ? WHERE code = ?;"
@@ -109,6 +113,7 @@ public class CurrenciesDao {
         }
     }
 
+    @Override
     public int deleteCurrency(String code) {
         try (PreparedStatement stmt = conn.prepareStatement(
                 "DELETE FROM currencies WHERE code = ?"

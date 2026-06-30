@@ -13,7 +13,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ExchangeRatesDao {
+public class ExchangeRatesDao implements ExchangeRatesDaoInterface {
 
     private final Connection conn;
 
@@ -22,6 +22,7 @@ public class ExchangeRatesDao {
 
     }
 
+    @Override
     public List<ExchangeRate> getAllExchangeRates() {
         String sql = """
         
@@ -65,6 +66,7 @@ public class ExchangeRatesDao {
         }
     }
 
+    @Override
     public int addExchangeRate(int baseCurrencyId, int targetCurrencyId, BigDecimal rate) {
         try (PreparedStatement stmt = conn.prepareStatement(
                 "INSERT INTO exchange_rates(base_currency_id, target_currency_id, rate) VALUES (?, ?, ?);"
@@ -78,6 +80,9 @@ public class ExchangeRatesDao {
             if (!isCurrencyAlreadyExist(e)){
                 throw new DataAccessException("Failed to add rate", e);
             }
+            // не хочу заниматься вытаскиванием SQLException в сервисе, где я ловлю DataAccessException. Это слишком сложно.
+            // Этим занимается Spring. К тому же SQLite выбрасывает только сообщения, и только по ним можно определить какая ошибка
+            // Когда в Spring есть специальные методы, которые определяют Unique constraint.
             throw new AlreadyExistException("This rate already exist in this table", e);
         }
     }
@@ -94,6 +99,7 @@ public class ExchangeRatesDao {
         }
     }
 
+    @Override
     public int deleteRate(int baseCurrencyId, int targetCurrencyId){
         try (PreparedStatement stmt = conn.prepareStatement(
                 "DELETE FROM exchange_rates WHERE base_currency_id = ? AND target_currency_id = ?;"
@@ -107,6 +113,7 @@ public class ExchangeRatesDao {
         }
     }
 
+    @Override
     public ExchangeRate findByBaseAndTargetId(int baseCurrencyId, int targetCurrencyId){
 
 
@@ -157,6 +164,7 @@ public class ExchangeRatesDao {
     }
 
 
+    @Override
     public int changeRate(int baseCurrencyId, int targetCurrencyId, BigDecimal rate){
 
         try (PreparedStatement stmt = conn.prepareStatement(

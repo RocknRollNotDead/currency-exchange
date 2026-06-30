@@ -2,6 +2,7 @@ package ru.codeportfolio.services;
 
 import ru.codeportfolio.DTO.CurrencyDto;
 import ru.codeportfolio.db.CurrenciesDao;
+import ru.codeportfolio.db.CurrenciesDaoInterface;
 import ru.codeportfolio.exceptions.*;
 import ru.codeportfolio.models.Currency;
 import ru.codeportfolio.mapper.CurrencyMapper;
@@ -31,9 +32,9 @@ public class CurrencyService {
 
         try (Connection conn = dataSource.getConnection()) {
 
-            CurrenciesDao currenciesDao = new CurrenciesDao(conn);
+            CurrenciesDaoInterface currenciesDaoInterface = new CurrenciesDao(conn);
 
-            return CurrencyMapper.INSTANCE.toDtoList(currenciesDao.getAllCurrencies());
+            return CurrencyMapper.INSTANCE.toDtoList(currenciesDaoInterface.getAllCurrencies());
 
         } catch (SQLException e) {
             throw new DataAccessException("DB error", e);
@@ -46,8 +47,8 @@ public class CurrencyService {
         Currency result;
 
         try (Connection conn = dataSource.getConnection()) {
-            CurrenciesDao currenciesDao = new CurrenciesDao(conn);
-            result = currenciesDao.findByCode(code);
+            CurrenciesDaoInterface currenciesDaoInterface = new CurrenciesDao(conn);
+            result = currenciesDaoInterface.findByCode(code);
 
             if (result == null) {
                 throw new NotFoundException("Currency is not found");
@@ -69,10 +70,10 @@ public class CurrencyService {
         int result;
 
         try (Connection conn = dataSource.getConnection()) {
-            CurrenciesDao currenciesDao = new CurrenciesDao(conn);
+            CurrenciesDaoInterface currenciesDaoInterface = new CurrenciesDao(conn);
 
             try{
-                result = currenciesDao.addCurrency(code, fullName, sign);
+                result = currenciesDaoInterface.addCurrency(code, fullName, sign);
             } catch (CurrencyAlreadyExistException e){
                 throw new AlreadyExistException(code + " already exist", e);
             }
@@ -81,7 +82,7 @@ public class CurrencyService {
                 throw new DataAccessException("Failed add");
             }
 
-            return CurrencyMapper.INSTANCE.toDto(currenciesDao.findByCode(code));
+            return CurrencyMapper.INSTANCE.toDto(currenciesDaoInterface.findByCode(code));
 
 
         } catch (SQLException e) {
@@ -100,15 +101,15 @@ public class CurrencyService {
 
         try (Connection conn = dataSource.getConnection()) {
 
-            CurrenciesDao currenciesDao = new CurrenciesDao(conn);
+            CurrenciesDaoInterface currenciesDaoInterface = new CurrenciesDao(conn);
 
-            int result = currenciesDao.updateCurrency(code, fullName, sign);
+            int result = currenciesDaoInterface.updateCurrency(code, fullName, sign);
 
             if (result == 0){
                 throw new NotFoundException("Currency not found");
             }
 
-            return CurrencyMapper.INSTANCE.toDto(currenciesDao.findByCode(code));
+            return CurrencyMapper.INSTANCE.toDto(currenciesDaoInterface.findByCode(code));
 
         } catch (SQLException e) {
             throw new DataAccessException("DB error", e);
@@ -125,9 +126,9 @@ public class CurrencyService {
 
         try (Connection conn = dataSource.getConnection()) {
 
-            CurrenciesDao currenciesDao = new CurrenciesDao(conn);
+            CurrenciesDaoInterface currenciesDaoInterface = new CurrenciesDao(conn);
 
-            int result = currenciesDao.deleteCurrency(code);
+            int result = currenciesDaoInterface.deleteCurrency(code);
 
             if (result == 0){
                 throw new NotFoundException("Not found");
@@ -163,9 +164,9 @@ public class CurrencyService {
 
          try (Connection conn = dataSource.getConnection()) {
 
-             CurrenciesDao currenciesDao = new CurrenciesDao(conn);
+             CurrenciesDaoInterface currenciesDaoInterface = new CurrenciesDao(conn);
 
-             Currency currency = currenciesDao.findByCode(code);
+             Currency currency = currenciesDaoInterface.findByCode(code);
              if (currency == null){
                  throw new NotFoundException("Currency not found " + code);
              }
