@@ -2,6 +2,7 @@ package ru.codeportfolio.db;
 
 
 import ru.codeportfolio.exceptions.AlreadyExistException;
+import ru.codeportfolio.exceptions.CurrencyAlreadyExistException;
 import ru.codeportfolio.exceptions.DataAccessException;
 import ru.codeportfolio.models.Currency;
 
@@ -47,7 +48,7 @@ public class CurrenciesDao {
                 throw new DataAccessException("Failed to add currency", e);
             }
 
-            throw new AlreadyExistException("Failed to add currency", e);
+            throw new CurrencyAlreadyExistException("Failed to add currency", e);
 
         }
     }

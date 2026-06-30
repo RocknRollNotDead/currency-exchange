@@ -59,7 +59,12 @@ public class ExchangeRateService {
 
             ExchangeRatesDao exchangeRatesDao = new ExchangeRatesDao(conn);
 
-            result = exchangeRatesDao.addExchangeRate(baseCurrencyId, targetCurrencyId, rate);
+            try{
+                result = exchangeRatesDao.addExchangeRate(baseCurrencyId, targetCurrencyId, rate);
+            } catch (AlreadyExistException e){
+                throw new AlreadyExistException(e.getMessage() + ". " + baseCurrencyCode + targetCurrencyCode, e);
+            }
+
 
             if (result == 0){
                 throw new DataAccessException("Failed add");

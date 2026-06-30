@@ -2,9 +2,7 @@ package ru.codeportfolio.services;
 
 import ru.codeportfolio.DTO.CurrencyDto;
 import ru.codeportfolio.db.CurrenciesDao;
-import ru.codeportfolio.exceptions.DataAccessException;
-import ru.codeportfolio.exceptions.NotFoundException;
-import ru.codeportfolio.exceptions.ValidationException;
+import ru.codeportfolio.exceptions.*;
 import ru.codeportfolio.models.Currency;
 import ru.codeportfolio.mapper.CurrencyMapper;
 
@@ -73,7 +71,11 @@ public class CurrencyService {
         try (Connection conn = dataSource.getConnection()) {
             CurrenciesDao currenciesDao = new CurrenciesDao(conn);
 
-            result = currenciesDao.addCurrency(code, fullName, sign);
+            try{
+                result = currenciesDao.addCurrency(code, fullName, sign);
+            } catch (CurrencyAlreadyExistException e){
+                throw new AlreadyExistException(code + " already exist", e);
+            }
 
             if (result == 0){
                 throw new DataAccessException("Failed add");
