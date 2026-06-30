@@ -5,13 +5,13 @@ import ru.codeportfolio.models.Currency;
 import java.util.List;
 
 public interface CurrenciesDaoInterface {
-    List<Currency> getAllCurrencies();
+    List<Currency> getAll();
 
-    int addCurrency(String code, String fullName, String sign);
+    int add(String code, String fullName, String sign);
 
     Currency findByCode(String code);
 
-    int updateCurrency(String code, String fullName, String sign);
+    int update(String code, String fullName, String sign);
 
-    int deleteCurrency(String code);
+    int delete(String code);
 }

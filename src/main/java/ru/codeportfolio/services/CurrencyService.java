@@ -34,7 +34,7 @@ public class CurrencyService {
 
             CurrenciesDaoInterface currenciesDaoInterface = new CurrenciesDao(conn);
 
-            return CurrencyMapper.INSTANCE.toDtoList(currenciesDaoInterface.getAllCurrencies());
+            return CurrencyMapper.INSTANCE.toDtoList(currenciesDaoInterface.getAll());
 
         } catch (SQLException e) {
             throw new DataAccessException("DB error", e);
@@ -73,7 +73,7 @@ public class CurrencyService {
             CurrenciesDaoInterface currenciesDaoInterface = new CurrenciesDao(conn);
 
             try{
-                result = currenciesDaoInterface.addCurrency(code, fullName, sign);
+                result = currenciesDaoInterface.add(code, fullName, sign);
             } catch (CurrencyAlreadyExistException e){
                 throw new AlreadyExistException(code + " already exist", e);
             }
@@ -103,7 +103,7 @@ public class CurrencyService {
 
             CurrenciesDaoInterface currenciesDaoInterface = new CurrenciesDao(conn);
 
-            int result = currenciesDaoInterface.updateCurrency(code, fullName, sign);
+            int result = currenciesDaoInterface.update(code, fullName, sign);
 
             if (result == 0){
                 throw new NotFoundException("Currency not found");
@@ -128,7 +128,7 @@ public class CurrencyService {
 
             CurrenciesDaoInterface currenciesDaoInterface = new CurrenciesDao(conn);
 
-            int result = currenciesDaoInterface.deleteCurrency(code);
+            int result = currenciesDaoInterface.delete(code);
 
             if (result == 0){
                 throw new NotFoundException("Not found");

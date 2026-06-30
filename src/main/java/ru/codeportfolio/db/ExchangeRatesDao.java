@@ -23,7 +23,7 @@ public class ExchangeRatesDao implements ExchangeRatesDaoInterface {
     }
 
     @Override
-    public List<ExchangeRate> getAllExchangeRates() {
+    public List<ExchangeRate> getAll() {
         String sql = """
         
         SELECT er.id as er_id, er.rate,
@@ -67,7 +67,7 @@ public class ExchangeRatesDao implements ExchangeRatesDaoInterface {
     }
 
     @Override
-    public int addExchangeRate(int baseCurrencyId, int targetCurrencyId, BigDecimal rate) {
+    public int add(int baseCurrencyId, int targetCurrencyId, BigDecimal rate) {
         try (PreparedStatement stmt = conn.prepareStatement(
                 "INSERT INTO exchange_rates(base_currency_id, target_currency_id, rate) VALUES (?, ?, ?);"
         )){
@@ -100,7 +100,7 @@ public class ExchangeRatesDao implements ExchangeRatesDaoInterface {
     }
 
     @Override
-    public int deleteRate(int baseCurrencyId, int targetCurrencyId){
+    public int delete(int baseCurrencyId, int targetCurrencyId){
         try (PreparedStatement stmt = conn.prepareStatement(
                 "DELETE FROM exchange_rates WHERE base_currency_id = ? AND target_currency_id = ?;"
         )){
@@ -114,7 +114,7 @@ public class ExchangeRatesDao implements ExchangeRatesDaoInterface {
     }
 
     @Override
-    public ExchangeRate findByBaseAndTargetId(int baseCurrencyId, int targetCurrencyId){
+    public ExchangeRate findById(int baseCurrencyId, int targetCurrencyId){
 
 
         String sql = """
@@ -165,7 +165,7 @@ public class ExchangeRatesDao implements ExchangeRatesDaoInterface {
 
 
     @Override
-    public int changeRate(int baseCurrencyId, int targetCurrencyId, BigDecimal rate){
+    public int update(int baseCurrencyId, int targetCurrencyId, BigDecimal rate){
 
         try (PreparedStatement stmt = conn.prepareStatement(
                     "UPDATE exchange_rates SET rate = ? WHERE base_currency_id = ? AND target_currency_id = ?"

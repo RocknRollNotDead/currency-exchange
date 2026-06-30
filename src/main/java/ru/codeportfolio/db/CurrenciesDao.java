@@ -18,7 +18,7 @@ public class CurrenciesDao implements CurrenciesDaoInterface {
     }
 
     @Override
-    public List<Currency> getAllCurrencies() {
+    public List<Currency> getAll() {
         try (PreparedStatement stmt = conn.prepareStatement(
                 "SELECT id, code, full_name, sign FROM currencies")){
             List<Currency> currencies = new ArrayList<>();
@@ -37,7 +37,7 @@ public class CurrenciesDao implements CurrenciesDaoInterface {
     }
 
     @Override
-    public int addCurrency(String code, String fullName, String sign) {
+    public int add(String code, String fullName, String sign) {
         try (PreparedStatement stmt = conn.prepareStatement(
                 "INSERT INTO currencies(code, full_name, sign) VALUES (?, ?, ?);"
         )){
@@ -99,7 +99,7 @@ public class CurrenciesDao implements CurrenciesDaoInterface {
     }
 
     @Override
-    public int updateCurrency(String code, String fullName, String sign) {
+    public int update(String code, String fullName, String sign) {
         try (PreparedStatement stmt = conn.prepareStatement(
                 "UPDATE currencies SET full_name = ?, sign = ? WHERE code = ?;"
         )){
@@ -114,7 +114,7 @@ public class CurrenciesDao implements CurrenciesDaoInterface {
     }
 
     @Override
-    public int deleteCurrency(String code) {
+    public int delete(String code) {
         try (PreparedStatement stmt = conn.prepareStatement(
                 "DELETE FROM currencies WHERE code = ?"
         )){
