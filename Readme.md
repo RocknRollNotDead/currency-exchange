@@ -89,7 +89,7 @@ chown tomcat:tomcat /var/lib/currency-exchange
 ```
 (вместо mypassword вставляем свой придуманный пароль)
 
-> В Tomcat в `webapps/manager/META-INF/context.xml` может быть открыто (не закомментировано) значение `RemoteAddrValve`/`RemoteCIDRValve` которое ограничивает доступ к Manager, и его можно открыть только в убунту по адресу `localhost`, я проверил и закомментировал, если он был не закомментирован.
+В Tomcat в `webapps/manager/META-INF/context.xml` может быть открыто (не закомментировано) значение `RemoteAddrValve`/`RemoteCIDRValve` которое ограничивает доступ к Manager, и его можно открыть только в убунту по адресу `localhost`, я проверил и закомментировал, если он был не закомментирован.
 
 **2.6. Задал путь к базе данных через env**
 
